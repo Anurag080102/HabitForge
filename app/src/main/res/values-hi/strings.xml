@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HabitForge</string>
+
+    <!-- Common -->
+    <string name="save">सहेजें</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="delete">हटाएं</string>
+    <string name="edit">संपादित करें</string>
+    <string name="done">हो गया</string>
+    <string name="loading">लोड हो रहा है…</string>
+    <string name="error">त्रुटि</string>
+    <string name="retry">पुनः प्रयास करें</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">डैशबोर्ड</string>
+    <string name="nav_habits">आदतें</string>
+    <string name="nav_journal">डायरी</string>
+    <string name="nav_community">समुदाय</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">डैशबोर्ड</string>
+    <string name="daily_quote">आज का विचार</string>
+    <string name="your_progress">आपकी प्रगति</string>
+    <string name="today_habits">आज की आदतें</string>
+
+    <!-- Habits -->
+    <string name="habits_title">मेरी आदतें</string>
+    <string name="add_habit">आदत जोड़ें</string>
+    <string name="habit_name">आदत का नाम</string>
+    <string name="habit_description">विवरण (वैकल्पिक)</string>
+    <string name="habit_frequency">आवृत्ति</string>
+    <string name="frequency_daily">दैनिक</string>
+    <string name="frequency_weekly">साप्ताहिक</string>
+    <string name="current_streak">वर्तमान स्ट्रीक</string>
+    <string name="best_streak">सर्वश्रेष्ठ स्ट्रीक</string>
+    <string name="days">दिन</string>
+    <string name="mark_complete">पूर्ण चिह्नित करें</string>
+    <string name="mark_missed">छूटा चिह्नित करें</string>
+    <string name="no_habits">अभी तक कोई आदत नहीं है। अपनी पहली आदत जोड़ें!</string>
+
+    <!-- Journal -->
+    <string name="journal_title">डायरी</string>
+    <string name="add_entry">प्रविष्टि जोड़ें</string>
+    <string name="journal_prompt">आज आप कैसा महसूस कर रहे हैं?</string>
+    <string name="no_entries">अभी तक कोई डायरी प्रविष्टि नहीं है।</string>
+
+    <!-- Community -->
+    <string name="community_title">समुदाय फ़ीड</string>
+    <string name="share_milestone">उपलब्धि साझा करें</string>
+    <string name="no_posts">अभी तक कोई पोस्ट नहीं है।</string>
+
+    <!-- Notifications -->
+    <string name="reminder_title">आदत अनुस्मारक</string>
+    <string name="reminder_text">आज अपनी आदतें पूरी करना न भूलें!</string>
+</resources>
+

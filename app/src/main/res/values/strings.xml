@@ -1,3 +1,55 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">HabitForge</string>
+
+    <!-- Common -->
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="done">Done</string>
+    <string name="loading">Loading…</string>
+    <string name="error">Error</string>
+    <string name="retry">Retry</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_habits">Habits</string>
+    <string name="nav_journal">Journal</string>
+    <string name="nav_community">Community</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Dashboard</string>
+    <string name="daily_quote">Daily Quote</string>
+    <string name="your_progress">Your Progress</string>
+    <string name="today_habits">Today\'s Habits</string>
+
+    <!-- Habits -->
+    <string name="habits_title">My Habits</string>
+    <string name="add_habit">Add Habit</string>
+    <string name="habit_name">Habit Name</string>
+    <string name="habit_description">Description (optional)</string>
+    <string name="habit_frequency">Frequency</string>
+    <string name="frequency_daily">Daily</string>
+    <string name="frequency_weekly">Weekly</string>
+    <string name="current_streak">Current Streak</string>
+    <string name="best_streak">Best Streak</string>
+    <string name="days">days</string>
+    <string name="mark_complete">Mark Complete</string>
+    <string name="mark_missed">Mark Missed</string>
+    <string name="no_habits">No habits yet. Add your first habit!</string>
+
+    <!-- Journal -->
+    <string name="journal_title">Journal</string>
+    <string name="add_entry">Add Entry</string>
+    <string name="journal_prompt">How are you feeling today?</string>
+    <string name="no_entries">No journal entries yet.</string>
+
+    <!-- Community -->
+    <string name="community_title">Community Feed</string>
+    <string name="share_milestone">Share Milestone</string>
+    <string name="no_posts">No community posts yet.</string>
+
+    <!-- Notifications -->
+    <string name="reminder_title">Habit Reminder</string>
+    <string name="reminder_text">Don\'t forget to complete your habits today!</string>
 </resources>
