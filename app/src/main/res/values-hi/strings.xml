@@ -1,22 +1,3 @@
-    <!-- Profile & Tracking -->
-    <string name="profile_tab">प्रोफ़ाइल</string>
-    <string name="monthly_tracking">मासिक ट्रैकिंग</string>
-    <string name="no_monthly_data">अभी कोई मासिक डेटा नहीं है।</string>
-    <string name="name">नाम</string>
-    <string name="email">ईमेल</string>
-    <string name="avatar_url">अवतार URL</string>
-    <string name="save_profile">प्रोफ़ाइल सहेजें</string>
-    <string name="start_date">प्रारंभ तिथि (yyyy-MM-dd)</string>
-    <string name="end_date">समाप्ति तिथि (yyyy-MM-dd, वैकल्पिक)</string>
-    <string name="reminder_time">रिमाइंडर समय (HH:mm, वैकल्पिक)</string>
-    <string name="days_of_week">सप्ताह के दिन</string>
-    <string name="monday">सोम</string>
-    <string name="tuesday">मंगल</string>
-    <string name="wednesday">बुध</string>
-    <string name="thursday">गुरु</string>
-    <string name="friday">शुक्र</string>
-    <string name="saturday">शनि</string>
-    <string name="sunday">रवि</string>
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">HabitForge</string>
@@ -27,7 +8,7 @@
     <string name="delete">हटाएं</string>
     <string name="edit">संपादित करें</string>
     <string name="done">हो गया</string>
-    <string name="loading">लोड हो रहा है…</string>
+    <string name="loading">लोड हो रहा है...</string>
     <string name="error">त्रुटि</string>
     <string name="retry">पुनः प्रयास करें</string>
 
@@ -69,5 +50,24 @@
     <!-- Notifications -->
     <string name="reminder_title">आदत अनुस्मारक</string>
     <string name="reminder_text">आज अपनी आदतें पूरी करना न भूलें!</string>
-</resources>
 
+    <!-- Profile & Tracking -->
+    <string name="profile_tab">प्रोफ़ाइल</string>
+    <string name="monthly_tracking">मासिक ट्रैकिंग</string>
+    <string name="no_monthly_data">अभी कोई मासिक डेटा नहीं है।</string>
+    <string name="name">नाम</string>
+    <string name="email">ईमेल</string>
+    <string name="avatar_url">अवतार URL</string>
+    <string name="save_profile">प्रोफ़ाइल सहेजें</string>
+    <string name="start_date">प्रारंभ तिथि (yyyy-MM-dd)</string>
+    <string name="end_date">समाप्ति तिथि (yyyy-MM-dd, वैकल्पिक)</string>
+    <string name="reminder_time">रिमाइंडर समय (HH:mm, वैकल्पिक)</string>
+    <string name="days_of_week">सप्ताह के दिन</string>
+    <string name="monday">सोम</string>
+    <string name="tuesday">मंगल</string>
+    <string name="wednesday">बुध</string>
+    <string name="thursday">गुरु</string>
+    <string name="friday">शुक्र</string>
+    <string name="saturday">शनि</string>
+    <string name="sunday">रवि</string>
+</resources>
