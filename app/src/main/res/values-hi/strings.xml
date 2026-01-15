@@ -1,3 +1,22 @@
+    <!-- Profile & Tracking -->
+    <string name="profile_tab">प्रोफ़ाइल</string>
+    <string name="monthly_tracking">मासिक ट्रैकिंग</string>
+    <string name="no_monthly_data">अभी कोई मासिक डेटा नहीं है।</string>
+    <string name="name">नाम</string>
+    <string name="email">ईमेल</string>
+    <string name="avatar_url">अवतार URL</string>
+    <string name="save_profile">प्रोफ़ाइल सहेजें</string>
+    <string name="start_date">प्रारंभ तिथि (yyyy-MM-dd)</string>
+    <string name="end_date">समाप्ति तिथि (yyyy-MM-dd, वैकल्पिक)</string>
+    <string name="reminder_time">रिमाइंडर समय (HH:mm, वैकल्पिक)</string>
+    <string name="days_of_week">सप्ताह के दिन</string>
+    <string name="monday">सोम</string>
+    <string name="tuesday">मंगल</string>
+    <string name="wednesday">बुध</string>
+    <string name="thursday">गुरु</string>
+    <string name="friday">शुक्र</string>
+    <string name="saturday">शनि</string>
+    <string name="sunday">रवि</string>
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">HabitForge</string>
@@ -16,7 +35,6 @@
     <string name="nav_dashboard">डैशबोर्ड</string>
     <string name="nav_habits">आदतें</string>
     <string name="nav_journal">डायरी</string>
-    <string name="nav_community">समुदाय</string>
 
     <!-- Dashboard -->
     <string name="dashboard_title">डैशबोर्ड</string>
@@ -46,9 +64,7 @@
     <string name="no_entries">अभी तक कोई डायरी प्रविष्टि नहीं है।</string>
 
     <!-- Community -->
-    <string name="community_title">समुदाय फ़ीड</string>
     <string name="share_milestone">उपलब्धि साझा करें</string>
-    <string name="no_posts">अभी तक कोई पोस्ट नहीं है।</string>
 
     <!-- Notifications -->
     <string name="reminder_title">आदत अनुस्मारक</string>

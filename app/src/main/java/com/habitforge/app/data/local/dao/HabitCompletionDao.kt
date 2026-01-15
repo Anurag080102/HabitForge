@@ -1,3 +1,6 @@
+    // Get monthly completion counts for all habits
+    @Query("SELECT SUBSTR(date, 1, 7) AS month, COUNT(*) AS completedCount FROM habit_completions WHERE isCompleted = 1 GROUP BY month ORDER BY month DESC")
+    fun getMonthlyCompletionStats(): Flow<List<MonthlyCompletionStat>>
 package com.habitforge.app.data.local.dao
 
 import androidx.room.Dao

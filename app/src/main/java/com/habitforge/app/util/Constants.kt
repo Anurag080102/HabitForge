@@ -12,12 +12,7 @@ enum class HabitFrequency(val value: String, val displayName: String) {
     }
 }
 
-// Milestone types for community sharing
-enum class MilestoneType(val value: String) {
-    STREAK("STREAK"),
-    COMPLETION("COMPLETION"),
-    JOURNAL("JOURNAL")
-}
+// ...existing code...
 
 // Mood levels for journal entries
 enum class Mood(val value: Int, val emoji: String, val label: String) {

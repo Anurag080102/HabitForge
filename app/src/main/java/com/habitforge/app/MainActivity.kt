@@ -9,7 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -38,7 +38,7 @@ sealed class BottomNavItem(
     object Dashboard : BottomNavItem(Screen.Dashboard.route, Icons.Default.Home, R.string.nav_dashboard)
     object Habits : BottomNavItem(Screen.Habits.route, Icons.AutoMirrored.Filled.List, R.string.nav_habits)
     object Journal : BottomNavItem(Screen.Journal.route, Icons.Default.DateRange, R.string.nav_journal)
-    object Community : BottomNavItem(Screen.Community.route, Icons.Default.People, R.string.nav_community)
+    object Profile : BottomNavItem(Screen.Profile.route, Icons.Default.Person, R.string.profile_tab)
 }
 
 @AndroidEntryPoint
@@ -65,7 +65,7 @@ fun MainAppContent() {
         BottomNavItem.Dashboard,
         BottomNavItem.Habits,
         BottomNavItem.Journal,
-        BottomNavItem.Community
+        BottomNavItem.Profile
     )
 
     val showBottomBar = bottomNavItems.any { it.route == currentDestination?.route }

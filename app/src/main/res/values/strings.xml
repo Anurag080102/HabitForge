@@ -15,7 +15,7 @@
     <string name="nav_dashboard">Dashboard</string>
     <string name="nav_habits">Habits</string>
     <string name="nav_journal">Journal</string>
-    <string name="nav_community">Community</string>
+    <string name="profile_tab">Profile</string>
 
     <!-- Dashboard -->
     <string name="dashboard_title">Dashboard</string>
@@ -45,9 +45,7 @@
     <string name="no_entries">No journal entries yet.</string>
 
     <!-- Community -->
-    <string name="community_title">Community Feed</string>
     <string name="share_milestone">Share Milestone</string>
-    <string name="no_posts">No community posts yet.</string>
 
     <!-- Notifications -->
     <string name="reminder_title">Habit Reminder</string>

@@ -1,3 +1,37 @@
+    // Schedule reminder for a specific habit at a specific time (one day prior)
+    fun scheduleHabitReminder(context: Context, habitId: Long, reminderTime: String) {
+        // Parse reminderTime (HH:mm)
+        val parts = reminderTime.split(":")
+        if (parts.size != 2) return
+        val hour = parts[0].toIntOrNull() ?: return
+        val minute = parts[1].toIntOrNull() ?: 0
+
+        val now = java.util.Calendar.getInstance()
+        val target = java.util.Calendar.getInstance().apply {
+            add(java.util.Calendar.DAY_OF_MONTH, 1) // one day prior
+            set(java.util.Calendar.HOUR_OF_DAY, hour)
+            set(java.util.Calendar.MINUTE, minute)
+            set(java.util.Calendar.SECOND, 0)
+        }
+        val delay = target.timeInMillis - now.timeInMillis
+        if (delay <= 0) return
+
+        val data = androidx.work.Data.Builder()
+            .putLong("habitId", habitId)
+            .build()
+
+        val request = androidx.work.OneTimeWorkRequestBuilder<HabitReminderWorker>()
+            .setInitialDelay(delay, java.util.concurrent.TimeUnit.MILLISECONDS)
+            .setInputData(data)
+            .build()
+
+        androidx.work.WorkManager.getInstance(context).enqueue(request)
+    }
+
+    // Cancel all reminders for a habit (by tag)
+    fun cancelHabitReminders(context: Context, habitId: Long) {
+        androidx.work.WorkManager.getInstance(context).cancelAllWorkByTag("habit_$habitId")
+    }
 package com.habitforge.app.worker
 
 import android.content.Context

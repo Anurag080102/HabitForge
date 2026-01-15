@@ -11,6 +11,9 @@ data class HabitEntity(
     val description: String = "",
     val frequency: String = "DAILY", // DAILY or WEEKLY
     val reminderTime: String? = null, // HH:mm format
+    val startDate: String, // ISO format (yyyy-MM-dd)
+    val endDate: String? = null, // ISO format or null for open-ended
+    val daysOfWeek: String? = null, // Comma-separated (e.g., "MON,WED,FRI") or null for daily
     val createdAt: Long = System.currentTimeMillis(),
     val isArchived: Boolean = false
 )

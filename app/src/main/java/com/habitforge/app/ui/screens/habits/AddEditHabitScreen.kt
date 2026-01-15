@@ -1,3 +1,11 @@
+            // Reminder Time
+            OutlinedTextField(
+                value = uiState.reminderTime ?: "",
+                onValueChange = { viewModel.updateReminderTime(if (it.isBlank()) null else it) },
+                label = { Text("Reminder Time (HH:mm, optional)") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
 package com.habitforge.app.ui.screens.habits
 
 import androidx.compose.foundation.layout.*
@@ -9,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.habitforge.app.ui.screens.habits.AddEditHabitViewModel
 import com.habitforge.app.R
 import com.habitforge.app.util.HabitFrequency
 
@@ -94,6 +103,43 @@ fun AddEditHabitScreen(
                         label = { Text(frequency.displayName) },
                         modifier = Modifier.weight(1f)
                     )
+                }
+            }
+
+
+            // Start Date
+            OutlinedTextField(
+                value = uiState.startDate,
+                onValueChange = { viewModel.updateStartDate(it) },
+                label = { Text("Start Date (yyyy-MM-dd)") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            // End Date
+            OutlinedTextField(
+                value = uiState.endDate ?: "",
+                onValueChange = { viewModel.updateEndDate(if (it.isBlank()) null else it) },
+                label = { Text("End Date (yyyy-MM-dd, optional)") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            // Days of Week (for weekly habits)
+            if (uiState.frequency == com.habitforge.app.util.HabitFrequency.WEEKLY) {
+                val days = listOf("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    days.forEach { day ->
+                        FilterChip(
+                            selected = uiState.daysOfWeek.contains(day),
+                            onClick = {
+                                val newSet = if (uiState.daysOfWeek.contains(day))
+                                    uiState.daysOfWeek - day else uiState.daysOfWeek + day
+                                viewModel.updateDaysOfWeek(newSet)
+                            },
+                            label = { Text(day) }
+                        )
+                    }
                 }
             }
 

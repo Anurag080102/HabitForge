@@ -1,3 +1,22 @@
+    <!-- Profile & Tracking -->
+    <string name="profile_tab">Profil</string>
+    <string name="monthly_tracking">Suivi mensuel</string>
+    <string name="no_monthly_data">Aucune donnée mensuelle pour l'instant.</string>
+    <string name="name">Nom</string>
+    <string name="email">E-mail</string>
+    <string name="avatar_url">URL de l'avatar</string>
+    <string name="save_profile">Enregistrer le profil</string>
+    <string name="start_date">Date de début (aaaa-MM-jj)</string>
+    <string name="end_date">Date de fin (aaaa-MM-jj, optionnel)</string>
+    <string name="reminder_time">Heure de rappel (HH:mm, optionnel)</string>
+    <string name="days_of_week">Jours de la semaine</string>
+    <string name="monday">Lun</string>
+    <string name="tuesday">Mar</string>
+    <string name="wednesday">Mer</string>
+    <string name="thursday">Jeu</string>
+    <string name="friday">Ven</string>
+    <string name="saturday">Sam</string>
+    <string name="sunday">Dim</string>
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">HabitForge</string>
@@ -16,7 +35,6 @@
     <string name="nav_dashboard">Tableau de bord</string>
     <string name="nav_habits">Habitudes</string>
     <string name="nav_journal">Journal</string>
-    <string name="nav_community">Communauté</string>
 
     <!-- Dashboard -->
     <string name="dashboard_title">Tableau de bord</string>
@@ -46,9 +64,7 @@
     <string name="no_entries">Pas encore d\'entrées dans le journal.</string>
 
     <!-- Community -->
-    <string name="community_title">Fil de la communauté</string>
     <string name="share_milestone">Partager un accomplissement</string>
-    <string name="no_posts">Pas encore de publications.</string>
 
     <!-- Notifications -->
     <string name="reminder_title">Rappel d\'habitude</string>

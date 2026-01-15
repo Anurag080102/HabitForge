@@ -1,3 +1,4 @@
+import com.habitforge.app.ui.screens.profile.ProfileScreen
 package com.habitforge.app.ui.navigation
 
 import androidx.compose.runtime.Composable
@@ -75,12 +76,8 @@ fun HabitForgeNavGraph(
             )
         }
 
-        composable(Screen.Community.route) {
-            CommunityScreen(
-                onNavigateToShare = {
-                    // Share milestone screen - can be added later
-                }
-            )
+        composable(Screen.Profile.route) {
+            ProfileScreen()
         }
     }
 }

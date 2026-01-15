@@ -8,12 +8,15 @@ import com.habitforge.app.data.local.dao.JournalDao
 import com.habitforge.app.data.local.entity.HabitEntity
 import com.habitforge.app.data.local.entity.HabitCompletionEntity
 import com.habitforge.app.data.local.entity.JournalEntryEntity
+import com.habitforge.app.data.local.entity.UserProfileEntity
+import com.habitforge.app.data.local.dao.UserProfileDao
 
 @Database(
     entities = [
         HabitEntity::class,
         HabitCompletionEntity::class,
-        JournalEntryEntity::class
+        JournalEntryEntity::class,
+        UserProfileEntity::class
     ],
     version = 1,
     exportSchema = false
@@ -22,5 +25,6 @@ abstract class HabitForgeDatabase : RoomDatabase() {
     abstract fun habitDao(): HabitDao
     abstract fun habitCompletionDao(): HabitCompletionDao
     abstract fun journalDao(): JournalDao
+    abstract fun userProfileDao(): UserProfileDao
 }
 

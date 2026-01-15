@@ -36,25 +36,61 @@ class HabitReminderWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         return try {
-            // Get habits and check how many are incomplete today
-            val habits = habitRepository.getAllHabits().first()
-            var incompleteCount = 0
-
-            for (habit in habits) {
-                if (!habitRepository.isHabitCompletedToday(habit.id)) {
-                    incompleteCount++
+            val habitId = inputData.getLong("habitId", -1L)
+            if (habitId > 0) {
+                val habit = habitRepository.getHabitById(habitId)
+                if (habit != null && !habitRepository.isHabitCompletedToday(habit.id)) {
+                    showHabitNotification(habit.name)
+                }
+            } else {
+                // Fallback: show summary notification for all incomplete habits
+                val habits = habitRepository.getAllHabits().first()
+                var incompleteCount = 0
+                for (habit in habits) {
+                    if (!habitRepository.isHabitCompletedToday(habit.id)) {
+                        incompleteCount++
+                    }
+                }
+                if (incompleteCount > 0) {
+                    showNotification(incompleteCount)
                 }
             }
-
-            // Only show notification if there are incomplete habits
-            if (incompleteCount > 0) {
-                showNotification(incompleteCount)
-            }
-
             Result.success()
         } catch (_: Exception) {
             Result.retry()
         }
+    }
+    private fun showHabitNotification(habitName: String) {
+        createNotificationChannel()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            }
+        }
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        val title = context.getString(R.string.reminder_title)
+        val text = "Reminder: $habitName is scheduled for tomorrow!"
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_popup_reminder)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+        NotificationManagerCompat.from(context).notify((habitName.hashCode() and 0xFFFFFF), notification)
     }
 
     private fun showNotification(incompleteCount: Int) {
