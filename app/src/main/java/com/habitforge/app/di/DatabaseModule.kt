@@ -6,6 +6,8 @@ import com.habitforge.app.data.local.HabitForgeDatabase
 import com.habitforge.app.data.local.dao.HabitDao
 import com.habitforge.app.data.local.dao.HabitCompletionDao
 import com.habitforge.app.data.local.dao.JournalDao
+
+import com.habitforge.app.data.local.dao.UserProfileDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -41,5 +43,9 @@ object DatabaseModule {
     fun provideJournalDao(database: HabitForgeDatabase): JournalDao {
         return database.journalDao()
     }
-}
 
+    @Provides
+    fun provideUserProfileDao(database: HabitForgeDatabase): UserProfileDao {
+        return database.userProfileDao()
+    }
+}

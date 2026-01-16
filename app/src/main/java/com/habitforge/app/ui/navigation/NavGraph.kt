@@ -1,4 +1,3 @@
-import com.habitforge.app.ui.screens.profile.ProfileScreen
 package com.habitforge.app.ui.navigation
 
 import androidx.compose.runtime.Composable
@@ -8,12 +7,11 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.habitforge.app.ui.screens.community.CommunityScreen
 import com.habitforge.app.ui.screens.dashboard.DashboardScreen
-import com.habitforge.app.ui.screens.habits.AddEditHabitScreen
 import com.habitforge.app.ui.screens.habits.HabitsScreen
 import com.habitforge.app.ui.screens.journal.AddJournalEntryScreen
 import com.habitforge.app.ui.screens.journal.JournalScreen
+import com.habitforge.app.ui.screens.profile.ProfileScreen
 
 @Composable
 fun HabitForgeNavGraph(
@@ -45,7 +43,7 @@ fun HabitForgeNavGraph(
         }
 
         composable(Screen.AddHabit.route) {
-            AddEditHabitScreen(
+            com.habitforge.app.ui.screens.habits.AddEditHabitScreen(
                 habitId = null,
                 onNavigateBack = { navController.popBackStack() }
             )
@@ -56,7 +54,7 @@ fun HabitForgeNavGraph(
             arguments = listOf(navArgument("habitId") { type = NavType.LongType })
         ) { backStackEntry ->
             val habitId = backStackEntry.arguments?.getLong("habitId") ?: 0L
-            AddEditHabitScreen(
+            com.habitforge.app.ui.screens.habits.AddEditHabitScreen(
                 habitId = habitId,
                 onNavigateBack = { navController.popBackStack() }
             )

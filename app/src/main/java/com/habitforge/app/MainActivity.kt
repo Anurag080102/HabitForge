@@ -6,9 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -36,7 +36,7 @@ sealed class BottomNavItem(
     val labelResId: Int
 ) {
     object Dashboard : BottomNavItem(Screen.Dashboard.route, Icons.Default.Home, R.string.nav_dashboard)
-    object Habits : BottomNavItem(Screen.Habits.route, Icons.AutoMirrored.Filled.List, R.string.nav_habits)
+    object Habits : BottomNavItem(Screen.Habits.route, Icons.Default.List, R.string.nav_habits)
     object Journal : BottomNavItem(Screen.Journal.route, Icons.Default.DateRange, R.string.nav_journal)
     object Profile : BottomNavItem(Screen.Profile.route, Icons.Default.Person, R.string.profile_tab)
 }

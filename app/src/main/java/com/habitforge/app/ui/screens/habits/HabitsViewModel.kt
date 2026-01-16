@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.habitforge.app.data.local.entity.HabitEntity
 import com.habitforge.app.data.repository.HabitRepository
-import com.habitforge.app.util.HabitFrequency
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -82,94 +81,5 @@ class HabitsViewModel @Inject constructor(
     }
 }
 
-// ViewModel for Add/Edit Habit screen
-data class AddEditHabitUiState(
-    val name: String = "",
-    val description: String = "",
-    val frequency: HabitFrequency = HabitFrequency.DAILY,
-    val reminderTime: String? = null,
-    val isEditing: Boolean = false,
-    val isSaving: Boolean = false,
-    val savedSuccessfully: Boolean = false,
-    val errorMessage: String? = null
-)
-
-@HiltViewModel
-class AddEditHabitViewModel @Inject constructor(
-    private val habitRepository: HabitRepository
-) : ViewModel() {
-
-    private val _uiState = MutableStateFlow(AddEditHabitUiState())
-    val uiState: StateFlow<AddEditHabitUiState> = _uiState.asStateFlow()
-
-    private var editingHabitId: Long? = null
-
-    fun loadHabit(habitId: Long) {
-        viewModelScope.launch {
-            val habit = habitRepository.getHabitById(habitId)
-            habit?.let {
-                editingHabitId = it.id
-                _uiState.value = AddEditHabitUiState(
-                    name = it.name,
-                    description = it.description,
-                    frequency = HabitFrequency.fromValue(it.frequency),
-                    reminderTime = it.reminderTime,
-                    isEditing = true
-                )
-            }
-        }
-    }
-
-    fun updateName(name: String) {
-        _uiState.value = _uiState.value.copy(name = name)
-    }
-
-    fun updateDescription(description: String) {
-        _uiState.value = _uiState.value.copy(description = description)
-    }
-
-    fun updateFrequency(frequency: HabitFrequency) {
-        _uiState.value = _uiState.value.copy(frequency = frequency)
-    }
-
-    fun updateReminderTime(time: String?) {
-        _uiState.value = _uiState.value.copy(reminderTime = time)
-    }
-
-    fun saveHabit() {
-        val state = _uiState.value
-
-        if (state.name.isBlank()) {
-            _uiState.value = state.copy(errorMessage = "Habit name is required")
-            return
-        }
-
-        viewModelScope.launch {
-            _uiState.value = state.copy(isSaving = true)
-
-            val habit = HabitEntity(
-                id = editingHabitId ?: 0,
-                name = state.name.trim(),
-                description = state.description.trim(),
-                frequency = state.frequency.value,
-                reminderTime = state.reminderTime
-            )
-
-            if (editingHabitId != null) {
-                habitRepository.updateHabit(habit)
-            } else {
-                habitRepository.addHabit(habit)
-            }
-
-            _uiState.value = state.copy(
-                isSaving = false,
-                savedSuccessfully = true
-            )
-        }
-    }
-
-    fun clearError() {
-        _uiState.value = _uiState.value.copy(errorMessage = null)
-    }
-}
-
+// Removed duplicate AddEditHabitUiState and AddEditHabitViewModel from this file.
+// The AddEditHabitViewModel is defined in AddEditHabitViewModel.kt and should be used from there.

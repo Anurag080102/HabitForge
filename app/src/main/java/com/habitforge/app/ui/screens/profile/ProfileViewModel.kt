@@ -18,7 +18,8 @@ data class ProfileUiState(
     val profile: UserProfileEntity? = null,
     val monthlyStats: List<MonthlyCompletionStat> = emptyList(),
     val isLoading: Boolean = true,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val showConfirmation: Boolean = false // Show confirmation after save
 )
 
 @HiltViewModel
@@ -30,8 +31,17 @@ class ProfileViewModel @Inject constructor(
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
     init {
+        // Sync profile from Firestore to local database
+        syncProfileFromRemote()
         loadProfile()
         loadMonthlyStats()
+    }
+
+    // Sync profile from Firestore and update local database
+    private fun syncProfileFromRemote() {
+        viewModelScope.launch {
+            userProfileRepository.syncProfileFromRemote()
+        }
     }
 
     private fun loadProfile() {
@@ -51,8 +61,15 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun saveProfile(profile: UserProfileEntity) {
+        // Save profile to both local and remote database
+        println("[ProfileViewModel] saveProfile called with: $profile")
         viewModelScope.launch {
             userProfileRepository.saveProfile(profile)
+            _uiState.value = _uiState.value.copy(showConfirmation = true)
         }
+    }
+
+    fun resetConfirmation() {
+        _uiState.value = _uiState.value.copy(showConfirmation = false)
     }
 }

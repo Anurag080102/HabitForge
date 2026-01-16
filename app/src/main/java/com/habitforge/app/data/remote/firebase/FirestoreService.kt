@@ -8,10 +8,86 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.habitforge.app.data.local.entity.UserProfileEntity
 
 @Singleton
 class FirestoreService @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
     // FirestoreService ready for profile/stats sync
+
+    // Stream community posts ordered by timestamp desc
+    fun getCommunityPosts(): Flow<List<CommunityPost>> = callbackFlow {
+        val query = firestore.collection("community")
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+
+        val subscription = query.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                close(error)
+                return@addSnapshotListener
+            }
+            if (snapshot != null) {
+                val posts = snapshot.documents.mapNotNull { doc ->
+                    try {
+                        doc.toObject(CommunityPost::class.java)?.copy(id = doc.id)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                trySend(posts)
+            }
+        }
+
+        awaitClose { subscription.remove() }
+    }
+
+    // Share a post and return the created document id
+    suspend fun sharePost(post: CommunityPost): Result<String> {
+        return try {
+            val ref = firestore.collection("community").add(post).await()
+            Result.success(ref.id)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Increment likes for a post
+    suspend fun likePost(postId: String): Result<Unit> {
+        return try {
+            firestore.runTransaction { transaction ->
+                val ref = firestore.collection("community").document(postId)
+                val snapshot = transaction.get(ref)
+                val current = snapshot.getLong("likes") ?: 0L
+                transaction.update(ref, "likes", current + 1)
+            }.await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Save user profile to Firestore (single-user: document id = "main")
+    suspend fun saveUserProfile(profile: UserProfileEntity): Result<Unit> {
+        return try {
+            firestore.collection("profiles").document("main").set(profile).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Load user profile from Firestore (single-user: document id = "main")
+    suspend fun loadUserProfile(): Result<UserProfileEntity?> {
+        return try {
+            val doc = firestore.collection("profiles").document("main").get().await()
+            if (doc.exists()) {
+                val profile = doc.toObject(UserProfileEntity::class.java)
+                Result.success(profile)
+            } else {
+                Result.success(null)
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

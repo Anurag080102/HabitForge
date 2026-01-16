@@ -1,10 +1,3 @@
-        // Get all active habits for a given date and day of week
-        fun getHabitsForDate(date: LocalDate): Flow<List<HabitEntity>> {
-            val dayOfWeek = date.dayOfWeek.name.take(3) // e.g., MON, TUE
-            return habitDao.getHabitsForDate(date.format(dateFormatter), dayOfWeek)
-        }
-    // Get monthly completion stats for all habits
-    fun getMonthlyCompletionStats() = completionDao.getMonthlyCompletionStats()
 package com.habitforge.app.data.repository
 
 import com.habitforge.app.data.local.dao.HabitDao
@@ -122,5 +115,13 @@ class HabitRepository @Inject constructor(
     // Get total completions count
     suspend fun getTotalCompletions(habitId: Long): Int =
         completionDao.getTotalCompletions(habitId)
-}
 
+    // Get all active habits for a given date and day of week
+    fun getHabitsForDate(date: LocalDate): Flow<List<HabitEntity>> {
+        val dayOfWeek = date.dayOfWeek.name.take(3) // e.g., MON, TUE
+        return habitDao.getHabitsForDate(date.format(dateFormatter), dayOfWeek)
+    }
+
+    // Get monthly completion stats for all habits
+    fun getMonthlyCompletionStats() = completionDao.getMonthlyCompletionStats()
+}

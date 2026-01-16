@@ -1,6 +1,3 @@
-    // Get all active habits for a given date (ISO yyyy-MM-dd) and dayOfWeek (e.g., 'MON')
-    @Query("SELECT * FROM habits WHERE isArchived = 0 AND startDate <= :date AND (endDate IS NULL OR endDate >= :date) AND (frequency = 'DAILY' OR (frequency = 'WEEKLY' AND daysOfWeek LIKE '%' || :dayOfWeek || '%')) ORDER BY createdAt DESC")
-    fun getHabitsForDate(date: String, dayOfWeek: String): Flow<List<HabitEntity>>
 package com.habitforge.app.data.local.dao
 
 import androidx.room.Dao
@@ -38,5 +35,8 @@ interface HabitDao {
 
     @Query("SELECT * FROM habits WHERE frequency = :frequency AND isArchived = 0")
     fun getHabitsByFrequency(frequency: String): Flow<List<HabitEntity>>
-}
 
+    // Get all active habits for a given date (ISO yyyy-MM-dd) and dayOfWeek (e.g., 'MON')
+    @Query("SELECT * FROM habits WHERE isArchived = 0 AND startDate <= :date AND (endDate IS NULL OR endDate >= :date) AND (frequency = 'DAILY' OR (frequency = 'WEEKLY' AND daysOfWeek LIKE '%' || :dayOfWeek || '%')) ORDER BY createdAt DESC")
+    fun getHabitsForDate(date: String, dayOfWeek: String): Flow<List<HabitEntity>>
+}

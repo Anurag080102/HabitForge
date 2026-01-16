@@ -1,6 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">HabitForge</string>
+
+    <!-- Common -->
     <string name="save">Enregistrer</string>
     <string name="cancel">Annuler</string>
+    <string name="delete">Supprimer</string>
+    <string name="edit">Modifier</string>
+    <string name="done">Terminé</string>
+    <string name="loading">Chargement...</string>
+    <string name="error">Erreur</string>
+    <string name="retry">Réessayer</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">Tableau de bord</string>
+    <string name="nav_habits">Habitudes</string>
+    <string name="nav_journal">Journal</string>
+    <string name="profile_tab">Profil</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Tableau de bord</string>
+    <string name="daily_quote">Citation du jour</string>
+    <string name="your_progress">Vos progrès</string>
+    <string name="today_habits">Habitudes pour aujourd\'hui</string>
+
+    <!-- Habits -->
+    <string name="habits_title">Mes habitudes</string>
+    <string name="add_habit">Ajouter une habitude</string>
+    <string name="habit_name">Nom de l\'habitude</string>
+    <string name="habit_description">Description (facultatif)</string>
+    <string name="habit_frequency">Fréquence</string>
+    <string name="frequency_daily">Quotidien</string>
+    <string name="frequency_weekly">Hebdomadaire</string>
+    <string name="current_streak">Série actuelle</string>
+    <string name="best_streak">Meilleure série</string>
+    <string name="days">jours</string>
+    <string name="mark_complete">Marquer comme terminé</string>
+    <string name="mark_missed">Marquer comme manqué</string>
+    <string name="no_habits">Pas encore d\'habitudes. Ajoutez votre premi\u00e8re habitude !</string>
+
+    <!-- Journal -->
+    <string name="journal_title">Journal</string>
+    <string name="add_entry">Ajouter une entrée</string>
+    <string name="journal_prompt">Comment vous sentez-vous aujourd\'hui ?</string>
+    <string name="no_entries">Pas encore d\'entr\u00e9es de journal.</string>
+
+    <!-- Community -->
+    <string name="share_milestone">Partager un jalon</string>
+    <string name="community_title">Communauté</string>
+    <string name="no_posts">Pas encore de publications. Soyez le premier à partager !</string>
+
+    <!-- Notifications -->
+    <string name="reminder_title">Rappel d\'habitude</string>
+    <string name="reminder_text">N\'oubliez pas de compl\u00e9ter vos habitudes aujourd\'hui !</string>
+
+    <!-- Profile & Tracking -->
+    <string name="monthly_tracking">Suivi mensuel</string>
+    <string name="no_monthly_data">Pas encore de données mensuelles.</string>
+    <string name="name">Nom</string>
+    <string name="email">Email</string>
+    <string name="avatar_url">URL de l\'avatar</string>
+    <string name="save_profile">Enregistrer le profil</string>
+    <string name="start_date">Date de début (aaaa-MM-jj)</string>
+    <string name="end_date">Date de fin (aaaa-MM-jj, facultatif)</string>
+    <string name="reminder_time">Heure du rappel (HH:mm, facultatif)</string>
+    <string name="days_of_week">Jours de la semaine</string>
+    <string name="monday">Lun</string>
+    <string name="tuesday">Mar</string>
+    <string name="wednesday">Mer</string>
+    <string name="thursday">Jeu</string>
+    <string name="friday">Ven</string>
+    <string name="saturday">Sam</string>
+    <string name="sunday">Dim</string>
 </resources>
