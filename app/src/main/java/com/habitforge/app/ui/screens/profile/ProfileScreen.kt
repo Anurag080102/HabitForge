@@ -1,12 +1,14 @@
 package com.habitforge.app.ui.screens.profile
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarHost
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.TextFieldValue
 import com.habitforge.app.util.LocaleHelper
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -20,9 +22,9 @@ fun ProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val profile = uiState.profile ?: UserProfileEntity()
-    var name by remember { mutableStateOf(TextFieldValue(profile.name)) }
-    var email by remember { mutableStateOf(TextFieldValue(profile.email)) }
-    var avatarUrl by remember { mutableStateOf(TextFieldValue(profile.avatarUrl)) }
+    var name by remember { mutableStateOf(profile.name) }
+    var email by remember { mutableStateOf(profile.email) }
+    var avatarUrl by remember { mutableStateOf(profile.avatarUrl) }
     val scaffoldState = rememberScaffoldState()
 
     val context = LocalContext.current
@@ -43,59 +45,58 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxSize().padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Profile", style = MaterialTheme.typography.h6)
+                androidx.compose.material3.Text("Profile", style = MaterialTheme.typography.headlineSmall)
                 Spacer(Modifier.height(16.dp))
-                OutlinedTextField(
+                androidx.compose.material3.OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name") },
+                    label = { androidx.compose.material3.Text("Name") },
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 // Language selection
                 Spacer(Modifier.height(8.dp))
-                DropdownMenu(
+                androidx.compose.material3.DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
                 ) {
                     languages.forEach { (code, label) ->
-                        DropdownMenuItem(
+                        androidx.compose.material3.DropdownMenuItem(
+                            text = { androidx.compose.material3.Text(label) },
                             onClick = {
                                 selectedLang = code
                                 expanded = false
                                 LocaleHelper.applyLocale(context as android.app.Activity, code)
                             }
-                        ) {
-                            Text(label)
-                        }
+                        )
                     }
                 }
-                OutlinedTextField(
+                androidx.compose.material3.OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text("Email") },
+                    label = { androidx.compose.material3.Text("Email") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                OutlinedTextField(
+                androidx.compose.material3.OutlinedTextField(
                     value = avatarUrl,
                     onValueChange = { avatarUrl = it },
-                    label = { Text("Avatar URL") },
+                    label = { androidx.compose.material3.Text("Avatar URL") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))
-                Button(onClick = {
+                androidx.compose.material3.Button(onClick = {
                     viewModel.saveProfile(
                         UserProfileEntity(
-                            name = name.text,
-                            email = email.text,
-                            avatarUrl = avatarUrl.text
+                            name = name,
+                            email = email,
+                            avatarUrl = avatarUrl
                         )
                     )
                 }) {
-                    Text("Save Profile")
+                    androidx.compose.material3.Text("Save Profile")
                 }
                 Spacer(Modifier.height(24.dp))
-                Text("Monthly Tracking", style = MaterialTheme.typography.subtitle1)
+                androidx.compose.material3.Text("Monthly Tracking", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
                 MonthlyStatsList(uiState.monthlyStats)
             }
@@ -113,7 +114,7 @@ fun ProfileScreen(
 @Composable
 fun MonthlyStatsList(stats: List<MonthlyCompletionStat>) {
     if (stats.isEmpty()) {
-        Text("No monthly data yet.")
+        androidx.compose.material3.Text("No monthly data yet.")
     } else {
         Column(Modifier.fillMaxWidth()) {
             stats.forEach { stat ->
@@ -121,8 +122,8 @@ fun MonthlyStatsList(stats: List<MonthlyCompletionStat>) {
                     Modifier.fillMaxWidth().padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(stat.month)
-                    Text("Completed: ${stat.completedCount}")
+                    androidx.compose.material3.Text(stat.month)
+                    androidx.compose.material3.Text("Completed: ${stat.completedCount}")
                 }
             }
         }

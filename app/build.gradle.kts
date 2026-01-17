@@ -4,14 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-}
-
-// Apply Google Services (Firebase) only when google-services.json is present.
-// This allows the project to sync/build in Android Studio even if the JSON is not committed.
-if (file("google-services.json").exists()) {
-    apply(plugin = "com.google.gms.google-services")
-} else {
-    println("WARN: google-services.json not found in :app. Firebase Google Services plugin not applied.")
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -26,9 +19,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 
-        // Specify supported languages
-        resourceConfigurations += listOf("en", "fr", "hi")
+    androidResources {
+        localeFilters += listOf("en", "fr", "hi")
     }
 
     buildTypes {
@@ -64,6 +58,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation("androidx.compose.material:material")
     implementation(libs.material.icons.extended)
 
     // Lifecycle & ViewModel
