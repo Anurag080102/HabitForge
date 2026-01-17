@@ -79,6 +79,19 @@ class HabitsViewModel @Inject constructor(
             loadHabits()
         }
     }
+
+    fun syncHabitsToRemote() {
+        viewModelScope.launch {
+            habitRepository.saveHabitsToRemote()
+        }
+    }
+
+    fun syncHabitsFromRemote() {
+        viewModelScope.launch {
+            habitRepository.syncHabitsFromRemote()
+            loadHabits()
+        }
+    }
 }
 
 // Removed duplicate AddEditHabitUiState and AddEditHabitViewModel from this file.

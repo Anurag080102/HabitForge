@@ -60,7 +60,7 @@ class AddEditHabitViewModel @Inject constructor(
         }
     }
 
-    fun saveHabit() {
+    fun saveHabit(context: android.content.Context? = null) {
         val state = _uiState.value
         if (state.name.isBlank()) {
             _uiState.value = state.copy(errorMessage = "Name cannot be empty")
@@ -80,7 +80,14 @@ class AddEditHabitViewModel @Inject constructor(
             if (state.isEditing) {
                 habitRepository.updateHabit(entity)
             } else {
-                habitRepository.addHabit(entity)
+                val id = habitRepository.addHabit(entity)
+                if (context != null) {
+                    com.habitforge.app.util.HabitNotificationUtil.scheduleHabitNotification(
+                        context,
+                        id,
+                        entity.reminderTime
+                    )
+                }
             }
             _uiState.value = state.copy(isSaving = false, savedSuccessfully = true)
         }

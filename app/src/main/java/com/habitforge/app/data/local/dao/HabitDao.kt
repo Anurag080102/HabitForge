@@ -39,4 +39,8 @@ interface HabitDao {
     // Get all active habits for a given date (ISO yyyy-MM-dd) and dayOfWeek (e.g., 'MON')
     @Query("SELECT * FROM habits WHERE isArchived = 0 AND startDate <= :date AND (endDate IS NULL OR endDate >= :date) AND (frequency = 'DAILY' OR (frequency = 'WEEKLY' AND daysOfWeek LIKE '%' || :dayOfWeek || '%')) ORDER BY createdAt DESC")
     fun getHabitsForDate(date: String, dayOfWeek: String): Flow<List<HabitEntity>>
+
+    // Get all habits as a list (not Flow)
+    @Query("SELECT * FROM habits WHERE isArchived = 0 ORDER BY createdAt DESC")
+    suspend fun getAllHabitsOnce(): List<HabitEntity>
 }

@@ -2,15 +2,20 @@ package com.habitforge.app.data.repository
 
 import com.habitforge.app.data.local.dao.JournalDao
 import com.habitforge.app.data.local.entity.JournalEntryEntity
+import com.habitforge.app.data.remote.firebase.FirestoreService
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 
 @Singleton
 class JournalRepository @Inject constructor(
-    private val journalDao: JournalDao
+    private val journalDao: JournalDao,
+    private val firestoreService: FirestoreService
 ) {
     private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
@@ -34,15 +39,27 @@ class JournalRepository @Inject constructor(
     fun getEntriesForHabit(habitId: Long): Flow<List<JournalEntryEntity>> =
         journalDao.getEntriesForHabit(habitId)
 
-    // Add new entry
+    // Add new entry and sync to Firestore (single entry, not batch, safe coroutine)
     suspend fun addEntry(content: String, mood: Int = 3, habitId: Long? = null): Long {
         val entry = JournalEntryEntity(
             content = content,
             mood = mood,
             date = LocalDate.now().format(dateFormatter),
-            habitId = habitId
+            habitId = habitId,
+            createdAt = System.currentTimeMillis()
         )
-        return journalDao.insertEntry(entry)
+        val id = journalDao.insertEntry(entry)
+        val savedEntry = journalDao.getEntryById(id)
+        if (savedEntry != null && savedEntry.id > 0) {
+            GlobalScope.launch(Dispatchers.IO) {
+                try {
+                    firestoreService.saveJournalEntries(listOf(savedEntry))
+                } catch (e: Exception) {
+                    println("[JournalRepository] Firestore sync failed: ${e.message}")
+                }
+            }
+        }
+        return id
     }
 
     // Update entry
@@ -57,5 +74,19 @@ class JournalRepository @Inject constructor(
             startDate.format(dateFormatter),
             endDate.format(dateFormatter)
         )
-}
 
+    // Save all journal entries to Firestore
+    suspend fun saveJournalEntriesToRemote() {
+        val entries = journalDao.getAllEntriesOnce()
+        firestoreService.saveJournalEntries(entries)
+    }
+
+    // Load all journal entries from Firestore and update local
+    suspend fun syncJournalEntriesFromRemote() {
+        val remoteResult = firestoreService.loadJournalEntries()
+        if (remoteResult.isSuccess) {
+            val remoteEntries = remoteResult.getOrNull() ?: emptyList()
+            remoteEntries.forEach { journalDao.insertEntry(it) }
+        }
+    }
+}

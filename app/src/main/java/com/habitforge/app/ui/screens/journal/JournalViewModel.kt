@@ -64,6 +64,19 @@ class JournalViewModel @Inject constructor(
             }
         }
     }
+
+    fun syncJournalEntriesToRemote() {
+        viewModelScope.launch {
+            journalRepository.saveJournalEntriesToRemote()
+        }
+    }
+
+    fun syncJournalEntriesFromRemote() {
+        viewModelScope.launch {
+            journalRepository.syncJournalEntriesFromRemote()
+            loadEntries()
+        }
+    }
 }
 
 // ViewModel for Add Journal Entry screen
@@ -132,4 +145,3 @@ class AddJournalEntryViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }
 }
-
