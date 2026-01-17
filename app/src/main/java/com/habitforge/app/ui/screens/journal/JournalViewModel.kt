@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,18 +33,35 @@ class JournalViewModel @Inject constructor(
 
     private fun loadEntries() {
         viewModelScope.launch {
-            journalRepository.getAllEntries().collect { entries ->
-                _uiState.value = JournalUiState(
-                    isLoading = false,
-                    entries = entries
-                )
-            }
+            journalRepository
+                .getAllEntries()
+                .catch { e ->
+                    // Prevent app crash if Room/SQLite throws while collecting.
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        entries = emptyList(),
+                        errorMessage = e.message ?: "Failed to load journal entries"
+                    )
+                }
+                .collect { entries ->
+                    _uiState.value = JournalUiState(
+                        isLoading = false,
+                        entries = entries,
+                        errorMessage = null
+                    )
+                }
         }
     }
 
     fun deleteEntry(entry: JournalEntryEntity) {
         viewModelScope.launch {
-            journalRepository.deleteEntry(entry)
+            try {
+                journalRepository.deleteEntry(entry)
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    errorMessage = e.message ?: "Failed to delete journal entry"
+                )
+            }
         }
     }
 }
@@ -87,18 +105,26 @@ class AddJournalEntryViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            _uiState.value = state.copy(isSaving = true)
+            _uiState.value = state.copy(isSaving = true, errorMessage = null)
+            try {
+                journalRepository.addEntry(
+                    content = state.content.trim(),
+                    mood = state.mood.value,
+                    habitId = state.linkedHabitId
+                )
 
-            journalRepository.addEntry(
-                content = state.content.trim(),
-                mood = state.mood.value,
-                habitId = state.linkedHabitId
-            )
-
-            _uiState.value = state.copy(
-                isSaving = false,
-                savedSuccessfully = true
-            )
+                _uiState.value = state.copy(
+                    isSaving = false,
+                    savedSuccessfully = true,
+                    errorMessage = null
+                )
+            } catch (e: Exception) {
+                _uiState.value = state.copy(
+                    isSaving = false,
+                    savedSuccessfully = false,
+                    errorMessage = e.message ?: "Failed to save journal entry"
+                )
+            }
         }
     }
 

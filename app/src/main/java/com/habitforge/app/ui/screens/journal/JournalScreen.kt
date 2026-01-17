@@ -46,6 +46,19 @@ fun JournalScreen(
             ) {
                 CircularProgressIndicator()
             }
+        } else if (uiState.errorMessage != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = uiState.errorMessage ?: "",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
         } else if (uiState.entries.isEmpty()) {
             Box(
                 modifier = Modifier
