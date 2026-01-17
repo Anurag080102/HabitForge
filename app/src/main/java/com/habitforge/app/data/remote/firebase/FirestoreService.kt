@@ -118,6 +118,9 @@ class FirestoreService @Inject constructor(
 
     // Save all habits to Firestore
     suspend fun saveHabits(habits: List<HabitEntity>): Result<Unit> {
+        val firestore = firestoreOrNull()
+            ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
+        
         return try {
             val batch = firestore.batch()
             val habitsCollection = firestore.collection("habits")
@@ -134,6 +137,9 @@ class FirestoreService @Inject constructor(
 
     // Load all habits from Firestore
     suspend fun loadHabits(): Result<List<HabitEntity>> {
+        val firestore = firestoreOrNull()
+            ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
+        
         return try {
             val snapshot = firestore.collection("habits").get().await()
             val habits = snapshot.documents.mapNotNull { it.toObject(HabitEntity::class.java) }
@@ -145,6 +151,9 @@ class FirestoreService @Inject constructor(
 
     // Save all journal entries to Firestore
     suspend fun saveJournalEntries(entries: List<JournalEntryEntity>): Result<Unit> {
+        val firestore = firestoreOrNull()
+            ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
+        
         return try {
             val batch = firestore.batch()
             val entriesCollection = firestore.collection("journal_entries")
@@ -161,6 +170,9 @@ class FirestoreService @Inject constructor(
 
     // Load all journal entries from Firestore
     suspend fun loadJournalEntries(): Result<List<JournalEntryEntity>> {
+        val firestore = firestoreOrNull()
+            ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
+        
         return try {
             val snapshot = firestore.collection("journal_entries").get().await()
             val entries = snapshot.documents.mapNotNull { it.toObject(JournalEntryEntity::class.java) }
