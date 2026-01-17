@@ -15,21 +15,11 @@ import com.habitforge.app.data.local.entity.UserProfileEntity
 
 @Singleton
 class FirestoreService @Inject constructor(
-    @ApplicationContext private val context: Context
+    private val firestore: FirebaseFirestore?
 ) {
     // FirestoreService ready for profile/stats sync
 
-    private fun firestoreOrNull(): FirebaseFirestore? {
-        return try {
-            // If google-services.json is missing (or Firebase isn't configured), this may return null or throw.
-            if (FirebaseApp.getApps(context).isEmpty()) {
-                FirebaseApp.initializeApp(context)
-            }
-            FirebaseFirestore.getInstance()
-        } catch (_: Exception) {
-            null
-        }
-    }
+    private fun firestoreOrNull(): FirebaseFirestore? = firestore
 
     // Stream community posts ordered by timestamp desc
     fun getCommunityPosts(): Flow<List<CommunityPost>> = callbackFlow {
