@@ -1,3 +1,8 @@
+// Backup of deleted file MainActivity.kt from com.bb.myapplication
+// Original location:
+// app/src/main/java/com/bb/myapplication/MainActivity.kt
+// Backup timestamp: 2026-01-17
+
 package com.bb.myapplication
 
 import android.os.Bundle
@@ -45,3 +50,4 @@ fun GreetingPreview() {
         Greeting("Android")
     }
 }
+

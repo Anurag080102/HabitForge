@@ -4,6 +4,7 @@ import com.habitforge.app.data.local.dao.HabitDao
 import com.habitforge.app.data.local.dao.HabitCompletionDao
 import com.habitforge.app.data.local.entity.HabitEntity
 import com.habitforge.app.data.local.entity.HabitCompletionEntity
+import com.habitforge.app.data.remote.firebase.FirestoreService
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -13,7 +14,8 @@ import javax.inject.Singleton
 @Singleton
 class HabitRepository @Inject constructor(
     private val habitDao: HabitDao,
-    private val completionDao: HabitCompletionDao
+    private val completionDao: HabitCompletionDao,
+    private val firestoreService: FirestoreService
 ) {
     private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
@@ -26,11 +28,20 @@ class HabitRepository @Inject constructor(
     // Get habit as Flow
     fun getHabitByIdFlow(habitId: Long): Flow<HabitEntity?> = habitDao.getHabitByIdFlow(habitId)
 
-    // Add new habit
-    suspend fun addHabit(habit: HabitEntity): Long = habitDao.insertHabit(habit)
+    // Add new habit and sync to Firestore
+    suspend fun addHabit(habit: HabitEntity): Long {
+        val id = habitDao.insertHabit(habit)
+        val habits = habitDao.getAllHabitsOnce()
+        firestoreService.saveHabits(habits)
+        return id
+    }
 
-    // Update habit
-    suspend fun updateHabit(habit: HabitEntity) = habitDao.updateHabit(habit)
+    // Update habit and sync to Firestore
+    suspend fun updateHabit(habit: HabitEntity) {
+        habitDao.updateHabit(habit)
+        val habits = habitDao.getAllHabitsOnce()
+        firestoreService.saveHabits(habits)
+    }
 
     // Delete habit
     suspend fun deleteHabit(habit: HabitEntity) = habitDao.deleteHabit(habit)
@@ -124,4 +135,19 @@ class HabitRepository @Inject constructor(
 
     // Get monthly completion stats for all habits
     fun getMonthlyCompletionStats() = completionDao.getMonthlyCompletionStats()
+
+    // Save all habits to Firestore
+    suspend fun saveHabitsToRemote() {
+        val habits = habitDao.getAllHabitsOnce()
+        firestoreService.saveHabits(habits)
+    }
+
+    // Load all habits from Firestore and update local
+    suspend fun syncHabitsFromRemote() {
+        val remoteResult = firestoreService.loadHabits()
+        if (remoteResult.isSuccess) {
+            val remoteHabits = remoteResult.getOrNull() ?: emptyList()
+            remoteHabits.forEach { habitDao.insertHabit(it) }
+        }
+    }
 }

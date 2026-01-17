@@ -35,5 +35,8 @@ interface JournalDao {
 
     @Query("SELECT * FROM journal_entries WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
     fun getEntriesInRange(startDate: String, endDate: String): Flow<List<JournalEntryEntity>>
-}
 
+    // Get all entries as a list (not Flow)
+    @Query("SELECT * FROM journal_entries ORDER BY createdAt DESC")
+    suspend fun getAllEntriesOnce(): List<JournalEntryEntity>
+}

@@ -13,6 +13,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.habitforge.app.ui.screens.habits.AddEditHabitViewModel
 import com.habitforge.app.R
 import com.habitforge.app.util.HabitFrequency
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +38,9 @@ fun AddEditHabitScreen(
             onNavigateBack()
         }
     }
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -117,6 +124,15 @@ fun AddEditHabitScreen(
                 singleLine = true
             )
 
+            // Reminder Time
+            OutlinedTextField(
+                value = uiState.reminderTime ?: "",
+                onValueChange = { viewModel.updateReminderTime(if (it.isBlank()) null else it) },
+                label = { Text("Reminder Time (HH:mm, optional)") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
             // Days of Week (for weekly habits)
             if (uiState.frequency == HabitFrequency.WEEKLY) {
                 val days = listOf("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
@@ -148,7 +164,11 @@ fun AddEditHabitScreen(
 
             // Save Button
             Button(
-                onClick = { viewModel.saveHabit() },
+                onClick = {
+                    scope.launch {
+                        viewModel.saveHabit(context = context)
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isSaving
             ) {

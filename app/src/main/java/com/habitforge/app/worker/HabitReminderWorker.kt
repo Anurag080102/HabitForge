@@ -20,6 +20,8 @@ import com.habitforge.app.data.repository.HabitRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @HiltWorker
 class HabitReminderWorker @AssistedInject constructor(
@@ -37,14 +39,32 @@ class HabitReminderWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         return try {
             val habitId = inputData.getLong("habitId", -1L)
-            if (habitId > 0) {
+            val formatter = DateTimeFormatter.ISO_LOCAL_DATE
+            if (habitId != -1L) {
+                // One-time notification for a specific habit
                 val habit = habitRepository.getHabitById(habitId)
-                if (habit != null && !habitRepository.isHabitCompletedToday(habit.id)) {
-                    showHabitNotification(habit.name)
+                if (habit != null) {
+                    val tomorrow = LocalDate.now().plusDays(1)
+                    val habitStart = LocalDate.parse(habit.startDate, formatter)
+                    if (habitStart == tomorrow) {
+                        showTomorrowHabitNotification(habit.name)
+                    }
                 }
-            } else {
-                // Fallback: show summary notification for all incomplete habits
-                val habits = habitRepository.getAllHabits().first()
+                return Result.success()
+            }
+            // Fallback: daily reminder logic
+            val habits = habitRepository.getAllHabits().first()
+            val tomorrow = LocalDate.now().plusDays(1)
+            var sent = false
+            for (habit in habits) {
+                val habitStart = LocalDate.parse(habit.startDate, formatter)
+                if (habitStart == tomorrow) {
+                    showTomorrowHabitNotification(habit.name)
+                    sent = true
+                }
+            }
+            if (!sent) {
+                // fallback to existing logic
                 var incompleteCount = 0
                 for (habit in habits) {
                     if (!habitRepository.isHabitCompletedToday(habit.id)) {
@@ -60,7 +80,8 @@ class HabitReminderWorker @AssistedInject constructor(
             Result.retry()
         }
     }
-    private fun showHabitNotification(habitName: String) {
+
+    private fun showTomorrowHabitNotification(habitName: String) {
         createNotificationChannel()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
@@ -80,13 +101,13 @@ class HabitReminderWorker @AssistedInject constructor(
             intent,
             PendingIntent.FLAG_IMMUTABLE
         )
-        val title = context.getString(R.string.reminder_title)
-        val text = "Reminder: $habitName is scheduled for tomorrow!"
+        val title = "Get Ready!"
+        val text = "Hey, a new habit '$habitName' is scheduled for tomorrow! Are you charged up?"
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_popup_reminder)
             .setContentTitle(title)
             .setContentText(text)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()

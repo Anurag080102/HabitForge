@@ -1,5 +1,7 @@
 package com.habitforge.app
 
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,6 +30,8 @@ import com.habitforge.app.ui.navigation.HabitForgeNavGraph
 import com.habitforge.app.ui.navigation.Screen
 import com.habitforge.app.ui.theme.HabitForgeTheme
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.core.content.ContextCompat
+import com.habitforge.app.worker.ReminderScheduler
 
 // Bottom navigation items
 sealed class BottomNavItem(
@@ -45,6 +49,12 @@ sealed class BottomNavItem(
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 100)
+            }
+        }
+        ReminderScheduler.scheduleDailyReminder(this)
         enableEdgeToEdge()
         setContent {
             HabitForgeTheme {

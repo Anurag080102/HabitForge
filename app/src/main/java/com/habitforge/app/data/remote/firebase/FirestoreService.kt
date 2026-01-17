@@ -9,6 +9,8 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.habitforge.app.data.local.entity.UserProfileEntity
+import com.habitforge.app.data.local.entity.HabitEntity
+import com.habitforge.app.data.local.entity.JournalEntryEntity
 
 @Singleton
 class FirestoreService @Inject constructor(
@@ -86,6 +88,60 @@ class FirestoreService @Inject constructor(
             } else {
                 Result.success(null)
             }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Save all habits to Firestore
+    suspend fun saveHabits(habits: List<HabitEntity>): Result<Unit> {
+        return try {
+            val batch = firestore.batch()
+            val habitsCollection = firestore.collection("habits")
+            habits.forEach { habit ->
+                val docRef = habitsCollection.document(habit.id.toString())
+                batch.set(docRef, habit)
+            }
+            batch.commit().await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Load all habits from Firestore
+    suspend fun loadHabits(): Result<List<HabitEntity>> {
+        return try {
+            val snapshot = firestore.collection("habits").get().await()
+            val habits = snapshot.documents.mapNotNull { it.toObject(HabitEntity::class.java) }
+            Result.success(habits)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Save all journal entries to Firestore
+    suspend fun saveJournalEntries(entries: List<JournalEntryEntity>): Result<Unit> {
+        return try {
+            val batch = firestore.batch()
+            val entriesCollection = firestore.collection("journal_entries")
+            entries.forEach { entry ->
+                val docRef = entriesCollection.document(entry.id.toString())
+                batch.set(docRef, entry)
+            }
+            batch.commit().await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Load all journal entries from Firestore
+    suspend fun loadJournalEntries(): Result<List<JournalEntryEntity>> {
+        return try {
+            val snapshot = firestore.collection("journal_entries").get().await()
+            val entries = snapshot.documents.mapNotNull { it.toObject(JournalEntryEntity::class.java) }
+            Result.success(entries)
         } catch (e: Exception) {
             Result.failure(e)
         }
