@@ -10,6 +10,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -53,8 +54,8 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    private suspend fun loadQuote() {
-        val result = quoteRepository.getTodayQuote()
+    private suspend fun loadQuote(forceRefresh: Boolean = false) {
+        val result = quoteRepository.getTodayQuote(forceRefresh = forceRefresh)
         result.onSuccess { quote ->
             _uiState.value = _uiState.value.copy(quote = quote)
         }
@@ -62,21 +63,27 @@ class DashboardViewModel @Inject constructor(
 
     private fun loadHabitsWithStatus() {
         viewModelScope.launch {
-            habitRepository.getAllHabits().collect { habits ->
+            // Combine habits Flow with today's completions Flow to ensure updates when completions change
+            combine(
+                habitRepository.getAllHabits(),
+                habitRepository.getTodayCompletions()
+            ) { habits, completions ->
                 val habitsWithStatus = habits.map { habit ->
-                    val isCompleted = habitRepository.isHabitCompletedToday(habit.id)
+                    val isCompleted = completions.any { it.habitId == habit.id && it.isCompleted }
                     val streak = habitRepository.calculateStreak(habit.id)
                     HabitWithStatus(habit, isCompleted, streak)
                 }
 
                 val completedCount = habitsWithStatus.count { it.isCompletedToday }
 
-                _uiState.value = _uiState.value.copy(
+                _uiState.value.copy(
                     isLoading = false,
                     todayHabits = habitsWithStatus,
                     completedCount = completedCount,
                     totalCount = habits.size
                 )
+            }.collect { newState ->
+                _uiState.value = newState
             }
         }
     }
@@ -97,7 +104,7 @@ class DashboardViewModel @Inject constructor(
 
     fun refreshQuote() {
         viewModelScope.launch {
-            loadQuote()
+            loadQuote(forceRefresh = true)
         }
     }
 

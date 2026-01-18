@@ -82,7 +82,8 @@ class AddEditHabitViewModel @Inject constructor(
             )
             if (state.isEditing) {
                 // cancel existing reminders and reschedule if needed
-                if (context != null && entity.id != 0L) {
+                if (context != null && entity.id != 0L && entity.reminderTime != null && entity.reminderTime.isNotBlank()) {
+                    android.util.Log.d("AddEditHabitViewModel", "Editing habit ${entity.id}, scheduling reminder: reminderTime=${entity.reminderTime}, startDate=${entity.startDate}")
                     com.habitforge.app.worker.ReminderScheduler.cancelHabitReminders(context, entity.id)
                     com.habitforge.app.util.HabitNotificationUtil.scheduleHabitNotification(
                         context,
@@ -90,20 +91,33 @@ class AddEditHabitViewModel @Inject constructor(
                         entity.reminderTime,
                         entity.startDate
                     )
+                    // Log scheduled work for debugging
+                    com.habitforge.app.worker.ReminderScheduler.logScheduledWork(context, entity.id)
+                } else {
+                    android.util.Log.w("AddEditHabitViewModel", "Cannot schedule reminder: context=${context != null}, habitId=${entity.id}, reminderTime=${entity.reminderTime}")
                 }
                 habitRepository.updateHabit(entity)
             } else {
                 val id = habitRepository.addHabit(entity)
-                if (context != null) {
+                if (context != null && entity.reminderTime != null && entity.reminderTime.isNotBlank()) {
+                    android.util.Log.d("AddEditHabitViewModel", "New habit created with id=$id, scheduling reminder: reminderTime=${entity.reminderTime}, startDate=${entity.startDate}")
                     com.habitforge.app.util.HabitNotificationUtil.scheduleHabitNotification(
                         context,
                         id,
                         entity.reminderTime,
                         entity.startDate
                     )
+                    // Log scheduled work for debugging
+                    com.habitforge.app.worker.ReminderScheduler.logScheduledWork(context, id)
+                } else {
+                    android.util.Log.w("AddEditHabitViewModel", "Cannot schedule reminder for new habit: context=${context != null}, reminderTime=${entity.reminderTime}")
                 }
             }
             _uiState.value = state.copy(isSaving = false, savedSuccessfully = true)
         }
+    }
+    
+    fun resetSavedState() {
+        _uiState.value = _uiState.value.copy(savedSuccessfully = false)
     }
 }

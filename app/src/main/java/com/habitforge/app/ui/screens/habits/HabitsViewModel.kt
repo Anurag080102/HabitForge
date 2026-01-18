@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,18 +39,24 @@ class HabitsViewModel @Inject constructor(
 
     private fun loadHabits() {
         viewModelScope.launch {
-            habitRepository.getAllHabits().collect { habits ->
+            // Combine habits Flow with today's completions Flow to ensure updates when completions change
+            combine(
+                habitRepository.getAllHabits(),
+                habitRepository.getTodayCompletions()
+            ) { habits, completions ->
                 val habitItems = habits.map { habit ->
                     val streak = habitRepository.calculateStreak(habit.id)
                     val total = habitRepository.getTotalCompletions(habit.id)
-                    val isCompleted = habitRepository.isHabitCompletedToday(habit.id)
+                    val isCompleted = completions.any { it.habitId == habit.id && it.isCompleted }
                     HabitListItem(habit, streak, total, isCompleted)
                 }
 
-                _uiState.value = HabitsUiState(
+                HabitsUiState(
                     isLoading = false,
                     habits = habitItems
                 )
+            }.collect { state ->
+                _uiState.value = state
             }
         }
     }

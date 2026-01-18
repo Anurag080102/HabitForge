@@ -111,8 +111,8 @@ class HabitReminderWorker @AssistedInject constructor(
             intent,
             PendingIntent.FLAG_IMMUTABLE
         )
-        val title = "Get Ready!"
-        val text = "Hey, a new habit '$habitName' is scheduled for tomorrow! Are you charged up?"
+        val title = context.getString(R.string.get_ready)
+        val text = context.getString(R.string.habit_tomorrow_notification, habitName)
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_popup_reminder)
             .setContentTitle(title)
@@ -154,9 +154,9 @@ class HabitReminderWorker @AssistedInject constructor(
 
         val title = context.getString(R.string.reminder_title)
         val text = if (incompleteCount == 1) {
-            "You have 1 habit to complete today!"
+            context.getString(R.string.habit_complete_single)
         } else {
-            "You have $incompleteCount habits to complete today!"
+            context.getString(R.string.habit_complete_multiple, incompleteCount)
         }
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)

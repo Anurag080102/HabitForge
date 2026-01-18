@@ -8,10 +8,12 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -26,6 +28,13 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val configuration = LocalConfiguration.current
+    
+    // Reload quote when language changes (detected via configuration)
+    LaunchedEffect(configuration.locales[0].language) {
+        android.util.Log.d("DashboardScreen", "Language changed to ${configuration.locales[0].language}, refreshing quote")
+        viewModel.refreshQuote()
+    }
 
     Scaffold(
         topBar = {

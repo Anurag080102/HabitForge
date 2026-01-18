@@ -64,6 +64,8 @@
     <string name="start_date">Date de début (aaaa-MM-jj)</string>
     <string name="end_date">Date de fin (aaaa-MM-jj, facultatif)</string>
     <string name="reminder_time">Heure du rappel (HH:mm, facultatif)</string>
+    <string name="not_set">Non défini</string>
+    <string name="set">Définir</string>
     <string name="days_of_week">Jours de la semaine</string>
     <string name="monday">Lun</string>
     <string name="tuesday">Mar</string>
@@ -72,4 +74,22 @@
     <string name="friday">Ven</string>
     <string name="saturday">Sam</string>
     <string name="sunday">Dim</string>
+    
+    <!-- Profile Screen -->
+    <string name="profile_title">Profil</string>
+    <string name="profile_information">Informations du profil</string>
+    <string name="language">Langue</string>
+    <string name="select_language">Sélectionner la langue</string>
+    <string name="profile_saved">Profil enregistré !</string>
+    <string name="completed">Terminé</string>
+    <string name="edit_habit">Modifier l\'habitude</string>
+    
+    <!-- Journal -->
+    <string name="how_are_you_feeling">Comment vous sentez-vous ?</string>
+    
+    <!-- Notifications -->
+    <string name="get_ready">Préparez-vous !</string>
+    <string name="habit_tomorrow_notification">Hé, une nouvelle habitude \'%1$s\' est prévue pour demain ! Êtes-vous prêt ?</string>
+    <string name="habit_complete_single">Vous avez 1 habitude à compléter aujourd\'hui !</string>
+    <string name="habit_complete_multiple">Vous avez %1$d habitudes à compléter aujourd\'hui !</string>
 </resources>

@@ -63,6 +63,8 @@
     <string name="start_date">Start Date (yyyy-MM-dd)</string>
     <string name="end_date">End Date (yyyy-MM-dd, optional)</string>
     <string name="reminder_time">Reminder Time (HH:mm, optional)</string>
+    <string name="not_set">Not set</string>
+    <string name="set">Set</string>
     <string name="days_of_week">Days of Week</string>
     <string name="monday">Mon</string>
     <string name="tuesday">Tue</string>
@@ -71,4 +73,22 @@
     <string name="friday">Fri</string>
     <string name="saturday">Sat</string>
     <string name="sunday">Sun</string>
+    
+    <!-- Profile Screen -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_information">Profile Information</string>
+    <string name="language">Language</string>
+    <string name="select_language">Select Language</string>
+    <string name="profile_saved">Profile saved!</string>
+    <string name="completed">Completed</string>
+    <string name="edit_habit">Edit Habit</string>
+    
+    <!-- Journal -->
+    <string name="how_are_you_feeling">How are you feeling?</string>
+    
+    <!-- Notifications -->
+    <string name="get_ready">Get Ready!</string>
+    <string name="habit_tomorrow_notification">Hey, a new habit \'%1$s\' is scheduled for tomorrow! Are you charged up?</string>
+    <string name="habit_complete_single">You have 1 habit to complete today!</string>
+    <string name="habit_complete_multiple">You have %1$d habits to complete today!</string>
 </resources>

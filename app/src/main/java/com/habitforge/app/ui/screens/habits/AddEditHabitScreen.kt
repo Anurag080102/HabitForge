@@ -35,6 +35,7 @@ fun AddEditHabitScreen(
     // Navigate back on successful save
     LaunchedEffect(uiState.savedSuccessfully) {
         if (uiState.savedSuccessfully) {
+            viewModel.resetSavedState() // Reset state before navigation
             onNavigateBack()
         }
     }
@@ -47,7 +48,7 @@ fun AddEditHabitScreen(
             TopAppBar(
                 title = {
                     Text(
-                        if (uiState.isEditing) "Edit Habit"
+                        if (uiState.isEditing) stringResource(R.string.edit_habit)
                         else stringResource(R.string.add_habit)
                     )
                 },
@@ -113,7 +114,7 @@ fun AddEditHabitScreen(
             OutlinedTextField(
                 value = uiState.startDate,
                 onValueChange = { viewModel.updateStartDate(it) },
-                label = { Text("Start Date (yyyy-MM-dd)") },
+                label = { Text(stringResource(R.string.start_date)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -122,7 +123,7 @@ fun AddEditHabitScreen(
             OutlinedTextField(
                 value = uiState.endDate ?: "",
                 onValueChange = { viewModel.updateEndDate(if (it.isBlank()) null else it) },
-                label = { Text("End Date (yyyy-MM-dd, optional)") },
+                label = { Text(stringResource(R.string.end_date)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -148,16 +149,16 @@ fun AddEditHabitScreen(
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
-                    value = if (currentReminder.isBlank()) "Not set" else currentReminder,
+                    value = if (currentReminder.isBlank()) stringResource(R.string.not_set) else currentReminder,
                     onValueChange = {},
-                    label = { Text("Reminder Time") },
+                    label = { Text(stringResource(R.string.reminder_time)) },
                     modifier = Modifier.weight(1f),
                     enabled = false,
                     singleLine = true
                 )
 
                 Button(onClick = { timePicker.show() }) {
-                    Text("Set")
+                    Text(stringResource(R.string.set))
                 }
 
                 if (currentReminder.isNotBlank()) {

@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.habitforge.app.util.LocaleHelper
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.habitforge.app.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.habitforge.app.data.local.entity.UserProfileEntity
 import com.habitforge.app.data.local.entity.MonthlyCompletionStat
@@ -53,26 +55,15 @@ fun ProfileScreen(
         }
     }
     
-    // Only apply locale when language actually changes, not on every profile update
-    // Use a flag to prevent applying locale on initial load
-    var isInitialLoad by remember { mutableStateOf(true) }
-    LaunchedEffect(selectedLang) {
-        if (isInitialLoad) {
-            isInitialLoad = false
-            return@LaunchedEffect
-        }
-        val currentLang = Locale.getDefault().language
-        if (selectedLang != currentLang) {
-            LocaleHelper.applyLocale(context as Activity, selectedLang)
-        }
-    }
+    // Track if locale was applied to prevent duplicate recreations
+    var localeApplied by remember { mutableStateOf(false) }
 
     // Use Material3 Scaffold consistently
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Profile") }
+                title = { Text(stringResource(R.string.profile_title)) }
             )
         }
     ) { paddingValues ->
@@ -95,7 +86,7 @@ fun ProfileScreen(
                     ) {
                         // UI styling: Orange accent for section header
                         Text(
-                            "Profile Information",
+                            stringResource(R.string.profile_information),
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -103,7 +94,7 @@ fun ProfileScreen(
                         OutlinedTextField(
                             value = name,
                             onValueChange = { name = it },
-                            label = { Text("Name") },
+                            label = { Text(stringResource(R.string.name)) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
@@ -114,10 +105,10 @@ fun ProfileScreen(
                             onExpandedChange = { expanded = !expanded }
                         ) {
                             OutlinedTextField(
-                                value = languages.find { it.first == selectedLang }?.second ?: "Select Language",
+                                value = languages.find { it.first == selectedLang }?.second ?: stringResource(R.string.select_language),
                                 onValueChange = {},
                                 readOnly = true,
-                                label = { Text("Language") },
+                                label = { Text(stringResource(R.string.language)) },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .menuAnchor(),
@@ -133,9 +124,13 @@ fun ProfileScreen(
                                     DropdownMenuItem(
                                         text = { Text(label) },
                                         onClick = {
-                                            selectedLang = code
-                                            expanded = false
-                                            LocaleHelper.applyLocale(context as Activity, code)
+                                            if (code != selectedLang) {
+                                                selectedLang = code
+                                                expanded = false
+                                                localeApplied = false // Reset flag for new change
+                                            } else {
+                                                expanded = false
+                                            }
                                         }
                                     )
                                 }
@@ -145,7 +140,7 @@ fun ProfileScreen(
                         OutlinedTextField(
                             value = email,
                             onValueChange = { email = it },
-                            label = { Text("Email") },
+                            label = { Text(stringResource(R.string.email)) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
@@ -153,6 +148,7 @@ fun ProfileScreen(
                         // UI styling: Orange primary button
                         Button(
                             onClick = {
+                                // Save profile first, then apply locale
                                 viewModel.saveProfile(
                                     UserProfileEntity(
                                         name = name,
@@ -161,9 +157,11 @@ fun ProfileScreen(
                                         preferredLanguage = selectedLang
                                     )
                                 )
-                                // Only apply locale if it changed
+                                // Apply locale only if it changed and hasn't been applied yet
                                 val currentLang = Locale.getDefault().language
-                                if (selectedLang != currentLang) {
+                                if (selectedLang != currentLang && !localeApplied) {
+                                    localeApplied = true
+                                    // Save language preference first, then apply locale
                                     LocaleHelper.applyLocale(context as Activity, selectedLang)
                                 }
                             },
@@ -173,7 +171,7 @@ fun ProfileScreen(
                             )
                         ) {
                             Text(
-                                "Save Profile",
+                                stringResource(R.string.save_profile),
                                 color = MaterialTheme.colorScheme.onPrimary
                             )
                         }
@@ -196,7 +194,7 @@ fun ProfileScreen(
                     ) {
                         // UI styling: Orange accent for section header
                         Text(
-                            "Monthly Tracking",
+                            stringResource(R.string.monthly_tracking),
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -214,7 +212,7 @@ fun ProfileScreen(
     // Show confirmation Snackbar when requested
     if (uiState.showConfirmation) {
         LaunchedEffect(snackbarHostState) {
-            snackbarHostState.showSnackbar("Profile saved!")
+            snackbarHostState.showSnackbar(context.getString(R.string.profile_saved))
             viewModel.resetConfirmation()
         }
     }
@@ -225,7 +223,7 @@ fun MonthlyStatsList(stats: List<MonthlyCompletionStat>) {
     // UI improvement: Enhanced statistics display with better visual design
     if (stats.isEmpty()) {
         Text(
-            "No monthly data yet.",
+            stringResource(R.string.no_monthly_data),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -248,7 +246,7 @@ fun MonthlyStatsList(stats: List<MonthlyCompletionStat>) {
                     )
                     // UI styling: Orange accent for completion count
                     Text(
-                        "Completed: ${stat.completedCount}",
+                        "${stringResource(R.string.completed)}: ${stat.completedCount}",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.primary
                     )

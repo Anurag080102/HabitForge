@@ -53,7 +53,7 @@ fun AddJournalEntryScreen(
             // Mood Selection
             // UI styling: Orange accent for section header
             Text(
-                text = "How are you feeling?",
+                text = stringResource(R.string.how_are_you_feeling),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary
             )

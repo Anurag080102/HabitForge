@@ -37,6 +37,8 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.habitforge.app.data.repository.HabitRepository
+import android.content.Context
+import com.habitforge.app.util.LocaleHelper
 
 // Bottom navigation items
 sealed class BottomNavItem(
@@ -56,18 +58,32 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var habitRepository: HabitRepository
 
+    override fun attachBaseContext(newBase: Context) {
+        // Apply saved language preference at activity level
+        // This is called on every activity creation/recreation
+        val savedLanguage = LocaleHelper.getSavedLanguage(newBase)
+        android.util.Log.d("MainActivity", "attachBaseContext called, savedLanguage=$savedLanguage")
+        val contextToUse = if (savedLanguage != null && savedLanguage.isNotEmpty()) {
+            android.util.Log.d("MainActivity", "Applying locale: $savedLanguage")
+            LocaleHelper.setLocale(newBase, savedLanguage)
+        } else {
+            android.util.Log.d("MainActivity", "No saved language, using default")
+            newBase
+        }
+        super.attachBaseContext(contextToUse)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 100)
             }
         }
 
-        // Schedule app-level daily reminder
-        ReminderScheduler.scheduleDailyReminder(this)
-
         // Schedule per-habit one-time reminders for existing habits
+        // Note: Daily reminder is already scheduled in HabitForgeApp.onCreate()
         lifecycleScope.launch {
             try {
                 val habits = habitRepository.getAllHabitsOnce()
@@ -81,8 +97,9 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 }
-            } catch (_: Exception) {
-                // ignore failures at startup scheduling
+            } catch (e: Exception) {
+                // Log error but don't crash
+                android.util.Log.e("MainActivity", "Failed to schedule habit reminders", e)
             }
         }
 

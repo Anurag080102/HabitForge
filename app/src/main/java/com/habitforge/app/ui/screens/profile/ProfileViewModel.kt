@@ -76,6 +76,7 @@ class ProfileViewModel @Inject constructor(
 
     fun saveProfile(profile: UserProfileEntity) {
         // Save profile to both local and remote database
+        // Note: Language preference is saved to SharedPreferences by LocaleHelper.applyLocale()
         println("[ProfileViewModel] saveProfile called with: $profile")
         viewModelScope.launch {
             userProfileRepository.saveProfile(profile)

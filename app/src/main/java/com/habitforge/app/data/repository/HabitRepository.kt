@@ -31,24 +31,41 @@ class HabitRepository @Inject constructor(
     // Add new habit and sync to Firestore
     suspend fun addHabit(habit: HabitEntity): Long {
         val id = habitDao.insertHabit(habit)
-        val habits = habitDao.getAllHabitsOnce()
-        firestoreService.saveHabits(habits)
+        // Try to sync to Firestore, but don't fail if it doesn't work
+        try {
+            val habits = habitDao.getAllHabitsOnce()
+            firestoreService.saveHabits(habits).getOrNull()
+        } catch (e: Exception) {
+            // Firestore sync failed, but local save succeeded - this is OK
+            android.util.Log.d("HabitRepository", "Firestore sync failed for addHabit (non-critical)", e)
+        }
         return id
     }
 
     // Update habit and sync to Firestore
     suspend fun updateHabit(habit: HabitEntity) {
         habitDao.updateHabit(habit)
-        val habits = habitDao.getAllHabitsOnce()
-        firestoreService.saveHabits(habits)
+        // Try to sync to Firestore, but don't fail if it doesn't work
+        try {
+            val habits = habitDao.getAllHabitsOnce()
+            firestoreService.saveHabits(habits).getOrNull()
+        } catch (e: Exception) {
+            // Firestore sync failed, but local update succeeded - this is OK
+            android.util.Log.d("HabitRepository", "Firestore sync failed for updateHabit (non-critical)", e)
+        }
     }
 
     // Delete habit
     suspend fun deleteHabit(habit: HabitEntity) {
         habitDao.deleteHabit(habit)
-        // Sync remaining habits to remote to ensure deleted habits are removed remotely as well
-        val habits = habitDao.getAllHabitsOnce()
-        firestoreService.saveHabits(habits)
+        // Try to sync to Firestore, but don't fail if it doesn't work
+        try {
+            val habits = habitDao.getAllHabitsOnce()
+            firestoreService.saveHabits(habits).getOrNull()
+        } catch (e: Exception) {
+            // Firestore sync failed, but local delete succeeded - this is OK
+            android.util.Log.d("HabitRepository", "Firestore sync failed for deleteHabit (non-critical)", e)
+        }
     }
 
     // Archive habit
