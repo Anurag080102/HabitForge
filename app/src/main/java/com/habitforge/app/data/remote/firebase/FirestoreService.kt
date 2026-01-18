@@ -1,14 +1,11 @@
 package com.habitforge.app.data.remote.firebase
 
 import com.google.firebase.firestore.Query
-import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
-import android.content.Context
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.habitforge.app.data.local.entity.UserProfileEntity
@@ -124,26 +121,40 @@ class FirestoreService @Inject constructor(
         return try {
             val batch = firestore.batch()
             val habitsCollection = firestore.collection("habits")
+
+            // Fetch existing remote habit docs to determine which to delete
+            val existingSnapshot = habitsCollection.get().await()
+            val existingIds = existingSnapshot.documents.mapNotNull { it.id }.toSet()
+            val localIds = habits.map { it.id.toString() }.toSet()
+
+            // Delete remote docs that are not in local list
+            val idsToDelete = existingIds - localIds
+            idsToDelete.forEach { id ->
+                val docRef = habitsCollection.document(id)
+                batch.delete(docRef)
+            }
+
+            // Upsert local habits
             habits.forEach { habit ->
                 val docRef = habitsCollection.document(habit.id.toString())
                 batch.set(docRef, habit)
             }
+
             batch.commit().await()
             Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
+        } catch (_: Exception) {
+            Result.failure(Exception("Failed to save habits to firestore"))
         }
     }
 
-    // Load all habits from Firestore
-    suspend fun loadHabits(): Result<List<HabitEntity>> {
+    // Delete user profile document from Firestore
+    suspend fun deleteUserProfile(): Result<Unit> {
         val firestore = firestoreOrNull()
             ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
-        
+
         return try {
-            val snapshot = firestore.collection("habits").get().await()
-            val habits = snapshot.documents.mapNotNull { it.toObject(HabitEntity::class.java) }
-            Result.success(habits)
+            firestore.collection("profiles").document("main").delete().await()
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -177,6 +188,20 @@ class FirestoreService @Inject constructor(
             val snapshot = firestore.collection("journal_entries").get().await()
             val entries = snapshot.documents.mapNotNull { it.toObject(JournalEntryEntity::class.java) }
             Result.success(entries)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Load all habits from Firestore
+    suspend fun loadHabits(): Result<List<HabitEntity>> {
+        val firestore = firestoreOrNull()
+            ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
+
+        return try {
+            val snapshot = firestore.collection("habits").get().await()
+            val habits = snapshot.documents.mapNotNull { it.toObject(HabitEntity::class.java) }
+            Result.success(habits)
         } catch (e: Exception) {
             Result.failure(e)
         }

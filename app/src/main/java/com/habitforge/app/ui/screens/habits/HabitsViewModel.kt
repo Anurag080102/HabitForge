@@ -54,8 +54,12 @@ class HabitsViewModel @Inject constructor(
         }
     }
 
-    fun deleteHabit(habit: HabitEntity) {
+    fun deleteHabit(habit: HabitEntity, context: android.content.Context? = null) {
         viewModelScope.launch {
+            // Cancel scheduled reminders for this habit if context available
+            if (context != null) {
+                com.habitforge.app.worker.ReminderScheduler.cancelHabitReminders(context, habit.id)
+            }
             habitRepository.deleteHabit(habit)
         }
     }

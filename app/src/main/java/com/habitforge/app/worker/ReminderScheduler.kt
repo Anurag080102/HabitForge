@@ -1,6 +1,7 @@
 package com.habitforge.app.worker
 
 import android.content.Context
+import android.util.Log
 import androidx.work.*
 import java.util.concurrent.TimeUnit
 import java.time.LocalDate
@@ -9,9 +10,12 @@ import java.util.Calendar
 
 object ReminderScheduler {
 
+    private const val TAG = "ReminderScheduler"
+
     // Schedule reminder for a specific habit at a specific time (one day prior to habit startDate)
     fun scheduleHabitReminder(context: Context, habitId: Long, reminderTime: String, startDate: String) {
         try {
+            Log.d(TAG, "scheduleHabitReminder called for habitId=$habitId reminderTime=$reminderTime startDate=$startDate")
             val formatter = DateTimeFormatter.ISO_LOCAL_DATE
             val habitStart = LocalDate.parse(startDate, formatter)
             val reminderDate = habitStart.minusDays(1)
@@ -34,7 +38,11 @@ object ReminderScheduler {
             }
 
             val delay = target.timeInMillis - now.timeInMillis
-            if (delay <= 0) return
+            Log.d(TAG, "Computed delayMillis=$delay for target=$target")
+            if (delay <= 0) {
+                Log.w(TAG, "Not scheduling reminder: computed delay <= 0")
+                return
+            }
 
             val data = Data.Builder()
                 .putLong("habitId", habitId)
@@ -47,6 +55,7 @@ object ReminderScheduler {
                 .build()
 
             WorkManager.getInstance(context).enqueue(request)
+            Log.d(TAG, "WorkManager enqueued OneTimeWorkRequest for habit_$habitId")
         } catch (_: Exception) {
             // parsing failed or invalid date/time - ignore scheduling
         }
@@ -54,6 +63,7 @@ object ReminderScheduler {
 
     // Cancel all reminders for a habit (by tag)
     fun cancelHabitReminders(context: Context, habitId: Long) {
+        Log.d(TAG, "cancelHabitReminders called for habitId=$habitId")
         WorkManager.getInstance(context).cancelAllWorkByTag("habit_$habitId")
     }
 
@@ -106,5 +116,17 @@ object ReminderScheduler {
             .build()
 
         WorkManager.getInstance(context).enqueue(reminderRequest)
+    }
+
+    // Schedule one-time immediate reminder for a specific habit (for testing)
+    fun scheduleImmediateHabitReminder(context: Context, habitId: Long, delayMinutes: Long = 1) {
+        val data = Data.Builder().putLong("habitId", habitId).build()
+        val request = OneTimeWorkRequestBuilder<HabitReminderWorker>()
+            .setInitialDelay(delayMinutes, TimeUnit.MINUTES)
+            .setInputData(data)
+            .addTag("habit_$habitId")
+            .build()
+        WorkManager.getInstance(context).enqueue(request)
+        Log.d(TAG, "Enqueued immediate OneTimeWorkRequest for habit_$habitId with delayMinutes=$delayMinutes")
     }
 }

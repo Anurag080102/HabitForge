@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -34,26 +35,32 @@ class HabitReminderWorker @AssistedInject constructor(
         const val CHANNEL_ID = "habit_reminders"
         const val NOTIFICATION_ID = 1001
         const val WORK_NAME = "habit_reminder_work"
+        private const val TAG = "HabitReminderWorker"
     }
 
     override suspend fun doWork(): Result {
+        Log.d(TAG, "doWork started with inputData=${inputData}")
         return try {
             val habitId = inputData.getLong("habitId", -1L)
+            Log.d(TAG, "habitId from inputData=$habitId")
             val formatter = DateTimeFormatter.ISO_LOCAL_DATE
             if (habitId != -1L) {
                 // One-time notification for a specific habit
                 val habit = habitRepository.getHabitById(habitId)
+                Log.d(TAG, "fetched habit=$habit")
                 if (habit != null) {
-                    val tomorrow = LocalDate.now().plusDays(1)
-                    val habitStart = LocalDate.parse(habit.startDate, formatter)
-                    if (habitStart == tomorrow) {
-                        showTomorrowHabitNotification(habit.name)
-                    }
+                    // Previously the worker only sent a notification if the habit start date was tomorrow.
+                    // That caused immediate/test reminders (or slight timezone/date mismatches) to be skipped.
+                    // Send the per-habit notification whenever the one-time work runs.
+                    showTomorrowHabitNotification(habit.name)
+                } else {
+                    Log.w(TAG, "Habit not found for id=$habitId")
                 }
                 return Result.success()
             }
             // Fallback: daily reminder logic
             val habits = habitRepository.getAllHabits().first()
+            Log.d(TAG, "Loaded ${habits.size} habits for daily check")
             val tomorrow = LocalDate.now().plusDays(1)
             var sent = false
             for (habit in habits) {
@@ -76,12 +83,14 @@ class HabitReminderWorker @AssistedInject constructor(
                 }
             }
             Result.success()
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.e(TAG, "Exception in doWork", e)
             Result.retry()
         }
     }
 
     private fun showTomorrowHabitNotification(habitName: String) {
+        Log.d(TAG, "showTomorrowHabitNotification for $habitName")
         createNotificationChannel()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
@@ -89,6 +98,7 @@ class HabitReminderWorker @AssistedInject constructor(
                     Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
+                Log.w(TAG, "Notification permission not granted - skipping notification")
                 return
             }
         }
@@ -112,9 +122,11 @@ class HabitReminderWorker @AssistedInject constructor(
             .setAutoCancel(true)
             .build()
         NotificationManagerCompat.from(context).notify((habitName.hashCode() and 0xFFFFFF), notification)
+        Log.d(TAG, "Tomorrow habit notification posted for $habitName")
     }
 
     private fun showNotification(incompleteCount: Int) {
+        Log.d(TAG, "showNotification for incompleteCount=$incompleteCount")
         createNotificationChannel()
 
         // Check notification permission for Android 13+
@@ -124,6 +136,7 @@ class HabitReminderWorker @AssistedInject constructor(
                     Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
+                Log.w(TAG, "Notification permission not granted - skipping notification")
                 return
             }
         }
@@ -156,6 +169,7 @@ class HabitReminderWorker @AssistedInject constructor(
             .build()
 
         NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
+        Log.d(TAG, "Summary notification posted: $text")
     }
 
     private fun createNotificationChannel() {

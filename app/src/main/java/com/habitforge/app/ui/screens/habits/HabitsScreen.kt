@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.habitforge.app.R
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -22,6 +23,7 @@ fun HabitsScreen(
     viewModel: HabitsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -98,7 +100,7 @@ fun HabitsScreen(
                     HabitListCard(
                         habitItem = habitItem,
                         onEdit = { onNavigateToEditHabit(habitItem.habit.id) },
-                        onDelete = { viewModel.deleteHabit(habitItem.habit) },
+                        onDelete = { viewModel.deleteHabit(habitItem.habit, context) },
                         onToggleComplete = {
                             if (habitItem.isCompletedToday) {
                                 viewModel.undoComplete(habitItem.habit.id)
@@ -268,4 +270,3 @@ fun HabitListCard(
         )
     }
 }
-

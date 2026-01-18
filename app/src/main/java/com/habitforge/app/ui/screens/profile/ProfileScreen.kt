@@ -1,13 +1,11 @@
 package com.habitforge.app.ui.screens.profile
 
+import android.app.Activity
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.Scaffold
-import androidx.compose.material.SnackbarHost
-import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,10 +24,14 @@ fun ProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val profile = uiState.profile ?: UserProfileEntity()
+
+    // Track editable fields and keep them in sync when profile updates
     var name by remember { mutableStateOf(profile.name) }
     var email by remember { mutableStateOf(profile.email) }
     var avatarUrl by remember { mutableStateOf(profile.avatarUrl) }
-    val scaffoldState = rememberScaffoldState()
+
+    // Snackbar host state for Material3
+    val snackbarHostState = remember { SnackbarHostState() }
 
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
@@ -40,17 +42,26 @@ fun ProfileScreen(
         "hi" to "हिन्दी"
     )
 
-    // UI improvement: Converted to Material3 Scaffold with proper structure
+    // Initialize selected language and editable fields from profile when loaded
+    LaunchedEffect(profile) {
+        val lang = profile.preferredLanguage
+        selectedLang = lang
+        LocaleHelper.applyLocale(context as Activity, lang)
+        // keep shown fields in sync when profile is loaded/updated
+        name = profile.name
+        email = profile.email
+        avatarUrl = profile.avatarUrl
+    }
+
+    // Use Material3 Scaffold consistently
     Scaffold(
-        scaffoldState = scaffoldState,
-        snackbarHost = { SnackbarHost(hostState = scaffoldState.snackbarHostState) },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { androidx.compose.material3.Text("Profile") }
+                title = { Text("Profile") }
             )
         }
     ) { paddingValues ->
-        // UI improvement: Improved spacing and visual consistency
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -69,86 +80,89 @@ fun ProfileScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         // UI styling: Orange accent for section header
-                        androidx.compose.material3.Text(
+                        Text(
                             "Profile Information",
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
-                        
-                        androidx.compose.material3.OutlinedTextField(
+
+                        OutlinedTextField(
                             value = name,
                             onValueChange = { name = it },
-                            label = { androidx.compose.material3.Text("Name") },
+                            label = { Text("Name") },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
 
                         // Language selection
-                        androidx.compose.material3.OutlinedTextField(
+                        OutlinedTextField(
                             value = languages.find { it.first == selectedLang }?.second ?: "Select Language",
                             onValueChange = {},
                             readOnly = true,
-                            label = { androidx.compose.material3.Text("Language") },
+                            label = { Text("Language") },
                             modifier = Modifier.fillMaxWidth(),
                             trailingIcon = {
-                                androidx.compose.material3.IconButton(onClick = { expanded = true }) {
-                                    androidx.compose.material3.Icon(
+                                IconButton(onClick = { expanded = true }) {
+                                    Icon(
                                         Icons.Default.KeyboardArrowDown,
                                         contentDescription = "Select Language"
                                     )
                                 }
                             }
                         )
-                        
-                        androidx.compose.material3.DropdownMenu(
+
+                        DropdownMenu(
                             expanded = expanded,
                             onDismissRequest = { expanded = false }
                         ) {
                             languages.forEach { (code, label) ->
-                                androidx.compose.material3.DropdownMenuItem(
-                                    text = { androidx.compose.material3.Text(label) },
+                                DropdownMenuItem(
+                                    text = { Text(label) },
                                     onClick = {
                                         selectedLang = code
                                         expanded = false
-                                        LocaleHelper.applyLocale(context as android.app.Activity, code)
+                                        LocaleHelper.applyLocale(context as Activity, code)
                                     }
                                 )
                             }
                         }
-                        
-                        androidx.compose.material3.OutlinedTextField(
+
+                        OutlinedTextField(
                             value = email,
                             onValueChange = { email = it },
-                            label = { androidx.compose.material3.Text("Email") },
+                            label = { Text("Email") },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
-                        
-                        androidx.compose.material3.OutlinedTextField(
+
+                        OutlinedTextField(
                             value = avatarUrl,
                             onValueChange = { avatarUrl = it },
-                            label = { androidx.compose.material3.Text("Avatar URL") },
+                            label = { Text("Avatar URL") },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
-                        
+
                         // UI styling: Orange primary button
-                        androidx.compose.material3.Button(
+                        Button(
                             onClick = {
                                 viewModel.saveProfile(
                                     UserProfileEntity(
                                         name = name,
                                         email = email,
-                                        avatarUrl = avatarUrl
+                                        avatarUrl = avatarUrl,
+                                        preferredLanguage = selectedLang
                                     )
                                 )
+                                // Ensure locale applied after save
+                                LocaleHelper.applyLocale(context as Activity, selectedLang)
                             },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                            colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary
                             )
                         ) {
-                            androidx.compose.material3.Text(
+                            Text(
                                 "Save Profile",
                                 color = MaterialTheme.colorScheme.onPrimary
                             )
@@ -156,7 +170,7 @@ fun ProfileScreen(
                     }
                 }
             }
-            
+
             item {
                 // Monthly Statistics Section
                 Card(
@@ -167,7 +181,7 @@ fun ProfileScreen(
                         modifier = Modifier.padding(20.dp)
                     ) {
                         // UI styling: Orange accent for section header
-                        androidx.compose.material3.Text(
+                        Text(
                             "Monthly Tracking",
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.primary
@@ -179,10 +193,11 @@ fun ProfileScreen(
             }
         }
     }
-    // Show confirmation Snackbar
+
+    // Show confirmation Snackbar when requested
     if (uiState.showConfirmation) {
-        LaunchedEffect(scaffoldState.snackbarHostState) {
-            scaffoldState.snackbarHostState.showSnackbar("Profile saved!")
+        LaunchedEffect(snackbarHostState) {
+            snackbarHostState.showSnackbar("Profile saved!")
             viewModel.resetConfirmation()
         }
     }
@@ -192,7 +207,7 @@ fun ProfileScreen(
 fun MonthlyStatsList(stats: List<MonthlyCompletionStat>) {
     // UI improvement: Enhanced statistics display with better visual design
     if (stats.isEmpty()) {
-        androidx.compose.material3.Text(
+        Text(
             "No monthly data yet.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -210,12 +225,12 @@ fun MonthlyStatsList(stats: List<MonthlyCompletionStat>) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    androidx.compose.material3.Text(
+                    Text(
                         stat.month,
                         style = MaterialTheme.typography.titleMedium
                     )
                     // UI styling: Orange accent for completion count
-                    androidx.compose.material3.Text(
+                    Text(
                         "Completed: ${stat.completedCount}",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.primary

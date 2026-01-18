@@ -33,6 +33,10 @@ import com.habitforge.app.ui.theme.HabitForgeTheme
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.core.content.ContextCompat
 import com.habitforge.app.worker.ReminderScheduler
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+import com.habitforge.app.data.repository.HabitRepository
 
 // Bottom navigation items
 sealed class BottomNavItem(
@@ -48,6 +52,10 @@ sealed class BottomNavItem(
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var habitRepository: HabitRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -55,7 +63,29 @@ class MainActivity : ComponentActivity() {
                 requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 100)
             }
         }
+
+        // Schedule app-level daily reminder
         ReminderScheduler.scheduleDailyReminder(this)
+
+        // Schedule per-habit one-time reminders for existing habits
+        lifecycleScope.launch {
+            try {
+                val habits = habitRepository.getAllHabitsOnce()
+                habits.forEach { habit ->
+                    habit.reminderTime?.let { time ->
+                        ReminderScheduler.scheduleHabitReminder(
+                            this@MainActivity,
+                            habit.id,
+                            time,
+                            habit.startDate
+                        )
+                    }
+                }
+            } catch (_: Exception) {
+                // ignore failures at startup scheduling
+            }
+        }
+
         enableEdgeToEdge()
         setContent {
             HabitForgeTheme {

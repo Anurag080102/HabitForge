@@ -44,7 +44,12 @@ class HabitRepository @Inject constructor(
     }
 
     // Delete habit
-    suspend fun deleteHabit(habit: HabitEntity) = habitDao.deleteHabit(habit)
+    suspend fun deleteHabit(habit: HabitEntity) {
+        habitDao.deleteHabit(habit)
+        // Sync remaining habits to remote to ensure deleted habits are removed remotely as well
+        val habits = habitDao.getAllHabitsOnce()
+        firestoreService.saveHabits(habits)
+    }
 
     // Archive habit
     suspend fun archiveHabit(habitId: Long) = habitDao.archiveHabit(habitId)
@@ -146,8 +151,13 @@ class HabitRepository @Inject constructor(
     suspend fun syncHabitsFromRemote() {
         val remoteResult = firestoreService.loadHabits()
         if (remoteResult.isSuccess) {
-            val remoteHabits = remoteResult.getOrNull() ?: emptyList()
-            remoteHabits.forEach { habitDao.insertHabit(it) }
+            val remoteHabits: List<HabitEntity> = remoteResult.getOrNull() ?: emptyList()
+            for (habit in remoteHabits) {
+                habitDao.insertHabit(habit)
+            }
         }
     }
+
+    // Get all habits as a list (not Flow)
+    suspend fun getAllHabitsOnce(): List<HabitEntity> = habitDao.getAllHabitsOnce()
 }

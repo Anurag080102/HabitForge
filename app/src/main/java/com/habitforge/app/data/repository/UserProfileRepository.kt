@@ -38,5 +38,14 @@ class UserProfileRepository @Inject constructor(
         // else: ignore errors, keep local data
     }
 
-    suspend fun clearProfile() = userProfileDao.clearProfile()
+    suspend fun clearProfile() {
+        userProfileDao.clearProfile()
+        // Attempt to delete remote profile as well
+        val result = firestoreService.deleteUserProfile()
+        if (result.isSuccess) {
+            println("[UserProfileRepository] remote profile deleted")
+        } else {
+            println("[UserProfileRepository] failed to delete remote profile: ${result.exceptionOrNull()}")
+        }
+    }
 }
