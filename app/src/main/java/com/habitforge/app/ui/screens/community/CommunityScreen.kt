@@ -35,8 +35,16 @@ fun CommunityScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToShare) {
-                Icon(Icons.Default.Share, contentDescription = stringResource(R.string.share_milestone))
+            // UI styling: Orange FAB for primary action
+            FloatingActionButton(
+                onClick = onNavigateToShare,
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(
+                    Icons.Default.Share, 
+                    contentDescription = stringResource(R.string.share_milestone),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
             }
         }
     ) { padding ->
@@ -50,17 +58,31 @@ fun CommunityScreen(
                 CircularProgressIndicator()
             }
         } else if (uiState.posts.isEmpty()) {
+            // UI improvement: Enhanced empty state with card design
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = stringResource(R.string.no_posts),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                // UI styling: Orange-accented empty state
+                Card(
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = stringResource(R.string.no_posts),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
         } else {
             LazyColumn(
@@ -101,16 +123,20 @@ fun CommunityPostCard(
         else -> "🎉"
     }
 
+    // UI improvement: Added elevation and improved spacing
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
             // Header
+            // UI styling: Orange accent for post badge
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = post.odge,
@@ -124,22 +150,25 @@ fun CommunityPostCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Milestone info
+            // UI styling: Orange accent for milestone value
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
                     text = milestoneEmoji,
-                    style = MaterialTheme.typography.headlineSmall
+                    style = MaterialTheme.typography.headlineLarge
                 )
                 Column {
                     Text(
                         text = "${post.milestoneValue} day streak!",
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = post.habitName,
                         style = MaterialTheme.typography.bodySmall,
@@ -150,18 +179,21 @@ fun CommunityPostCard(
 
             // Message
             if (post.message.isNotBlank()) {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = post.message,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Like button
+            // UI improvement: Enhanced like button with better visual feedback
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 IconButton(onClick = {
                     isLiked = !isLiked
@@ -177,7 +209,9 @@ fun CommunityPostCard(
                 }
                 Text(
                     text = "${post.likes + if (isLiked) 1 else 0}",
-                    style = MaterialTheme.typography.labelMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (isLiked) MaterialTheme.colorScheme.error
+                           else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

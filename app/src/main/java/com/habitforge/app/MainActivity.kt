@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -83,12 +84,31 @@ fun MainAppContent() {
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
+                // UI styling: Orange accent for selected navigation items
                 NavigationBar {
                     bottomNavItems.forEach { item ->
+                        val isSelected = currentDestination?.hierarchy?.any { it.route == item.route } == true
                         NavigationBarItem(
-                            icon = { Icon(item.icon, contentDescription = null) },
-                            label = { Text(stringResource(item.labelResId)) },
-                            selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
+                            icon = { 
+                                Icon(
+                                    item.icon, 
+                                    contentDescription = null,
+                                    tint = if (isSelected) 
+                                        MaterialTheme.colorScheme.primary 
+                                    else 
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                ) 
+                            },
+                            label = { 
+                                Text(
+                                    stringResource(item.labelResId),
+                                    color = if (isSelected) 
+                                        MaterialTheme.colorScheme.primary 
+                                    else 
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                ) 
+                            },
+                            selected = isSelected,
                             onClick = {
                                 navController.navigate(item.route) {
                                     popUpTo(navController.graph.findStartDestination().id) {
