@@ -46,16 +46,30 @@ class ProfileViewModel @Inject constructor(
 
     private fun loadProfile() {
         viewModelScope.launch {
-            userProfileRepository.getProfile().collectLatest { profile ->
-                _uiState.value = _uiState.value.copy(profile = profile, isLoading = false)
+            userProfileRepository.getProfile().collect { profile ->
+                // Only update if profile actually changed to prevent unnecessary recompositions
+                val currentProfile = _uiState.value.profile
+                if (currentProfile?.id != profile?.id || 
+                    currentProfile?.name != profile?.name ||
+                    currentProfile?.email != profile?.email ||
+                    currentProfile?.preferredLanguage != profile?.preferredLanguage) {
+                    _uiState.value = _uiState.value.copy(profile = profile, isLoading = false)
+                } else if (_uiState.value.isLoading) {
+                    // Still update isLoading flag if it was true
+                    _uiState.value = _uiState.value.copy(isLoading = false)
+                }
             }
         }
     }
 
     private fun loadMonthlyStats() {
         viewModelScope.launch {
-            habitRepository.getMonthlyCompletionStats().collectLatest { stats ->
-                _uiState.value = _uiState.value.copy(monthlyStats = stats)
+            habitRepository.getMonthlyCompletionStats().collect { stats ->
+                // Only update if stats actually changed
+                val currentStats = _uiState.value.monthlyStats
+                if (currentStats != stats) {
+                    _uiState.value = _uiState.value.copy(monthlyStats = stats)
+                }
             }
         }
     }

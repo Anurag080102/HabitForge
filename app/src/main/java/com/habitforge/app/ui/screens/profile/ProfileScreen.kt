@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,34 +22,49 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val profile = uiState.profile ?: UserProfileEntity()
-
-    // Track editable fields and keep them in sync when profile updates
-    var name by remember { mutableStateOf(profile.name) }
-    var email by remember { mutableStateOf(profile.email) }
-    var avatarUrl by remember { mutableStateOf(profile.avatarUrl) }
+    val profile = uiState.profile
 
     // Snackbar host state for Material3
     val snackbarHostState = remember { SnackbarHostState() }
 
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
-    var selectedLang by remember { mutableStateOf<String>(Locale.getDefault().language) }
+    
+    // Track editable fields - initialize once and update only when profile changes
+    var name by remember { mutableStateOf(profile?.name ?: "") }
+    var email by remember { mutableStateOf(profile?.email ?: "") }
+    var selectedLang by remember { mutableStateOf(profile?.preferredLanguage ?: Locale.getDefault().language) }
+    
     val languages = listOf(
         "en" to "English",
         "fr" to "Français",
         "hi" to "हिन्दी"
     )
 
-    // Initialize selected language and editable fields from profile when loaded
-    LaunchedEffect(profile) {
-        val lang = profile.preferredLanguage
-        selectedLang = lang
-        LocaleHelper.applyLocale(context as Activity, lang)
-        // keep shown fields in sync when profile is loaded/updated
-        name = profile.name
-        email = profile.email
-        avatarUrl = profile.avatarUrl
+    // Update fields only when profile actually changes (use profile.id as key to prevent unnecessary updates)
+    LaunchedEffect(profile?.id) {
+        profile?.let {
+            name = it.name
+            email = it.email
+            // Only update language if it's different from current to avoid unnecessary locale changes
+            if (it.preferredLanguage != selectedLang) {
+                selectedLang = it.preferredLanguage
+            }
+        }
+    }
+    
+    // Only apply locale when language actually changes, not on every profile update
+    // Use a flag to prevent applying locale on initial load
+    var isInitialLoad by remember { mutableStateOf(true) }
+    LaunchedEffect(selectedLang) {
+        if (isInitialLoad) {
+            isInitialLoad = false
+            return@LaunchedEffect
+        }
+        val currentLang = Locale.getDefault().language
+        if (selectedLang != currentLang) {
+            LocaleHelper.applyLocale(context as Activity, selectedLang)
+        }
     }
 
     // Use Material3 Scaffold consistently
@@ -94,36 +108,37 @@ fun ProfileScreen(
                             singleLine = true
                         )
 
-                        // Language selection
-                        OutlinedTextField(
-                            value = languages.find { it.first == selectedLang }?.second ?: "Select Language",
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Language") },
-                            modifier = Modifier.fillMaxWidth(),
-                            trailingIcon = {
-                                IconButton(onClick = { expanded = true }) {
-                                    Icon(
-                                        Icons.Default.KeyboardArrowDown,
-                                        contentDescription = "Select Language"
+                        // Language selection using ExposedDropdownMenuBox for Material 3
+                        ExposedDropdownMenuBox(
+                            expanded = expanded,
+                            onExpandedChange = { expanded = !expanded }
+                        ) {
+                            OutlinedTextField(
+                                value = languages.find { it.first == selectedLang }?.second ?: "Select Language",
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Language") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(),
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                                }
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                            ) {
+                                languages.forEach { (code, label) ->
+                                    DropdownMenuItem(
+                                        text = { Text(label) },
+                                        onClick = {
+                                            selectedLang = code
+                                            expanded = false
+                                            LocaleHelper.applyLocale(context as Activity, code)
+                                        }
                                     )
                                 }
-                            }
-                        )
-
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
-                        ) {
-                            languages.forEach { (code, label) ->
-                                DropdownMenuItem(
-                                    text = { Text(label) },
-                                    onClick = {
-                                        selectedLang = code
-                                        expanded = false
-                                        LocaleHelper.applyLocale(context as Activity, code)
-                                    }
-                                )
                             }
                         }
 
@@ -135,14 +150,6 @@ fun ProfileScreen(
                             singleLine = true
                         )
 
-                        OutlinedTextField(
-                            value = avatarUrl,
-                            onValueChange = { avatarUrl = it },
-                            label = { Text("Avatar URL") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true
-                        )
-
                         // UI styling: Orange primary button
                         Button(
                             onClick = {
@@ -150,12 +157,15 @@ fun ProfileScreen(
                                     UserProfileEntity(
                                         name = name,
                                         email = email,
-                                        avatarUrl = avatarUrl,
+                                        avatarUrl = "", // Avatar URL no longer used
                                         preferredLanguage = selectedLang
                                     )
                                 )
-                                // Ensure locale applied after save
-                                LocaleHelper.applyLocale(context as Activity, selectedLang)
+                                // Only apply locale if it changed
+                                val currentLang = Locale.getDefault().language
+                                if (selectedLang != currentLang) {
+                                    LocaleHelper.applyLocale(context as Activity, selectedLang)
+                                }
                             },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
@@ -174,11 +184,15 @@ fun ProfileScreen(
             item {
                 // Monthly Statistics Section
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 200.dp), // Stabilize minimum height to prevent layout shifts
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(20.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
                     ) {
                         // UI styling: Orange accent for section header
                         Text(
@@ -187,7 +201,10 @@ fun ProfileScreen(
                             color = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        MonthlyStatsList(uiState.monthlyStats)
+                        // Use key to prevent recomposition when stats haven't changed
+                        key(uiState.monthlyStats.size) {
+                            MonthlyStatsList(uiState.monthlyStats)
+                        }
                     }
                 }
             }

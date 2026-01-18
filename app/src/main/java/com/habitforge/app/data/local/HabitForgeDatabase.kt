@@ -18,7 +18,7 @@ import com.habitforge.app.data.local.dao.UserProfileDao
         JournalEntryEntity::class,
         UserProfileEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class HabitForgeDatabase : RoomDatabase() {

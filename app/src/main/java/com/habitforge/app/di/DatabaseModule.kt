@@ -25,8 +25,10 @@ object DatabaseModule {
         return Room.databaseBuilder(
             context,
             HabitForgeDatabase::class.java,
-            "habitforge_database"
-        ).build()
+            "habitforge_db"
+        )
+        .fallbackToDestructiveMigration()
+        .build()
     }
 
     @Provides
