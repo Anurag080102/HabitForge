@@ -17,6 +17,7 @@ class HabitRepositoryTest {
 
     private lateinit var habitDao: HabitDao
     private lateinit var completionDao: HabitCompletionDao
+    private lateinit var firestoreService: com.habitforge.app.data.remote.firebase.FirestoreService
     private lateinit var repository: HabitRepository
 
     private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
@@ -26,13 +27,14 @@ class HabitRepositoryTest {
     fun setup() {
         habitDao = mock()
         completionDao = mock()
-        repository = HabitRepository(habitDao, completionDao)
+        firestoreService = mock()
+        repository = HabitRepository(habitDao, completionDao, firestoreService)
     }
 
     @Test
     fun `addHabit should insert habit and return id`() = runTest {
         // Given
-        val habit = HabitEntity(name = "Exercise", frequency = "DAILY")
+        val habit = HabitEntity(name = "Exercise", frequency = "DAILY", startDate = today)
         whenever(habitDao.insertHabit(habit)).thenReturn(1L)
 
         // When

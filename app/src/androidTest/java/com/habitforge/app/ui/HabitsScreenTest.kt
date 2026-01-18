@@ -24,6 +24,7 @@ class HabitsScreenTest {
         description = description,
         frequency = "DAILY",
         reminderTime = null,
+        startDate = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE),
         createdAt = System.currentTimeMillis(),
         isArchived = false
     )

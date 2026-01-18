@@ -1,5 +1,6 @@
 package com.habitforge.app.data.repository
 
+import android.content.Context
 import com.habitforge.app.data.remote.api.QuoteResponse
 import com.habitforge.app.data.remote.api.QuotesApiService
 import kotlinx.coroutines.test.runTest
@@ -11,12 +12,14 @@ import org.mockito.kotlin.*
 class QuoteRepositoryTest {
 
     private lateinit var quotesApi: QuotesApiService
+    private lateinit var context: Context
     private lateinit var repository: QuoteRepository
 
     @Before
     fun setup() {
         quotesApi = mock()
-        repository = QuoteRepository(quotesApi)
+        context = mock()
+        repository = QuoteRepository(quotesApi, context)
     }
 
     @Test

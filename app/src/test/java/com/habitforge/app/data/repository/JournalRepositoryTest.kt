@@ -13,12 +13,14 @@ import org.mockito.kotlin.*
 class JournalRepositoryTest {
 
     private lateinit var journalDao: JournalDao
+    private lateinit var firestoreService: com.habitforge.app.data.remote.firebase.FirestoreService
     private lateinit var repository: JournalRepository
 
     @Before
     fun setup() {
         journalDao = mock()
-        repository = JournalRepository(journalDao)
+        firestoreService = mock()
+        repository = JournalRepository(journalDao, firestoreService)
     }
 
     @Test
