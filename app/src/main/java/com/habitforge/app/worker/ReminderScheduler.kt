@@ -3,38 +3,53 @@ package com.habitforge.app.worker
 import android.content.Context
 import androidx.work.*
 import java.util.concurrent.TimeUnit
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
 
 object ReminderScheduler {
 
-    // Schedule reminder for a specific habit at a specific time (one day prior)
-    fun scheduleHabitReminder(context: Context, habitId: Long, reminderTime: String) {
-        // Parse reminderTime (HH:mm)
-        val parts = reminderTime.split(":")
-        if (parts.size != 2) return
-        val hour = parts[0].toIntOrNull() ?: return
-        val minute = parts[1].toIntOrNull() ?: 0
+    // Schedule reminder for a specific habit at a specific time (one day prior to habit startDate)
+    fun scheduleHabitReminder(context: Context, habitId: Long, reminderTime: String, startDate: String) {
+        try {
+            val formatter = DateTimeFormatter.ISO_LOCAL_DATE
+            val habitStart = LocalDate.parse(startDate, formatter)
+            val reminderDate = habitStart.minusDays(1)
 
-        val now = java.util.Calendar.getInstance()
-        val target = java.util.Calendar.getInstance().apply {
-            add(java.util.Calendar.DAY_OF_MONTH, 1) // one day ahead
-            set(java.util.Calendar.HOUR_OF_DAY, hour)
-            set(java.util.Calendar.MINUTE, minute)
-            set(java.util.Calendar.SECOND, 0)
+            // Parse reminderTime (HH:mm)
+            val parts = reminderTime.split(":")
+            if (parts.size != 2) return
+            val hour = parts[0].toIntOrNull() ?: return
+            val minute = parts[1].toIntOrNull() ?: 0
+
+            val now = Calendar.getInstance()
+            val target = Calendar.getInstance().apply {
+                set(Calendar.YEAR, reminderDate.year)
+                set(Calendar.MONTH, reminderDate.monthValue - 1)
+                set(Calendar.DAY_OF_MONTH, reminderDate.dayOfMonth)
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+
+            val delay = target.timeInMillis - now.timeInMillis
+            if (delay <= 0) return
+
+            val data = Data.Builder()
+                .putLong("habitId", habitId)
+                .build()
+
+            val request = OneTimeWorkRequestBuilder<HabitReminderWorker>()
+                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                .setInputData(data)
+                .addTag("habit_$habitId")
+                .build()
+
+            WorkManager.getInstance(context).enqueue(request)
+        } catch (_: Exception) {
+            // parsing failed or invalid date/time - ignore scheduling
         }
-        val delay = target.timeInMillis - now.timeInMillis
-        if (delay <= 0) return
-
-        val data = Data.Builder()
-            .putLong("habitId", habitId)
-            .build()
-
-        val request = OneTimeWorkRequestBuilder<HabitReminderWorker>()
-            .setInitialDelay(delay, java.util.concurrent.TimeUnit.MILLISECONDS)
-            .setInputData(data)
-            .addTag("habit_$habitId")
-            .build()
-
-        WorkManager.getInstance(context).enqueue(request)
     }
 
     // Cancel all reminders for a habit (by tag)
@@ -69,16 +84,16 @@ object ReminderScheduler {
 
     // Calculate delay until 8 PM (20:00)
     private fun calculateInitialDelay(): Long {
-        val now = java.util.Calendar.getInstance()
-        val target = java.util.Calendar.getInstance().apply {
-            set(java.util.Calendar.HOUR_OF_DAY, 20)
-            set(java.util.Calendar.MINUTE, 0)
-            set(java.util.Calendar.SECOND, 0)
+        val now = Calendar.getInstance()
+        val target = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 20)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
         }
 
         // If target time has passed today, schedule for tomorrow
         if (target.before(now)) {
-            target.add(java.util.Calendar.DAY_OF_MONTH, 1)
+            target.add(Calendar.DAY_OF_MONTH, 1)
         }
 
         return target.timeInMillis - now.timeInMillis

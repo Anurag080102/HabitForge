@@ -124,14 +124,45 @@ fun AddEditHabitScreen(
                 singleLine = true
             )
 
-            // Reminder Time
-            OutlinedTextField(
-                value = uiState.reminderTime ?: "",
-                onValueChange = { viewModel.updateReminderTime(if (it.isBlank()) null else it) },
-                label = { Text("Reminder Time (HH:mm, optional)") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
+            // Reminder Time (replace text input with time picker)
+            val currentReminder = uiState.reminderTime ?: ""
+            val timeParts = currentReminder.split(":")
+            val initialHour = timeParts.getOrNull(0)?.toIntOrNull() ?: java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+            val initialMinute = timeParts.getOrNull(1)?.toIntOrNull() ?: java.util.Calendar.getInstance().get(java.util.Calendar.MINUTE)
+
+            val contextLocal = LocalContext.current
+            val timePicker = remember {
+                android.app.TimePickerDialog(
+                    contextLocal,
+                    { _, hourOfDay, minute ->
+                        viewModel.updateReminderTime(String.format("%02d:%02d", hourOfDay, minute))
+                    },
+                    initialHour,
+                    initialMinute,
+                    true
+                )
+            }
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = if (currentReminder.isBlank()) "Not set" else currentReminder,
+                    onValueChange = {},
+                    label = { Text("Reminder Time") },
+                    modifier = Modifier.weight(1f),
+                    enabled = false,
+                    singleLine = true
+                )
+
+                Button(onClick = { timePicker.show() }) {
+                    Text("Set")
+                }
+
+                if (currentReminder.isNotBlank()) {
+                    Button(onClick = { viewModel.updateReminderTime(null) }) {
+                        Text("Clear")
+                    }
+                }
+            }
 
             // Days of Week (for weekly habits)
             if (uiState.frequency == HabitFrequency.WEEKLY) {

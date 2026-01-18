@@ -14,6 +14,7 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 data class AddEditHabitUiState(
+    val id: Long? = null,
     val name: String = "",
     val description: String = "",
     val frequency: HabitFrequency = HabitFrequency.DAILY,
@@ -47,6 +48,7 @@ class AddEditHabitViewModel @Inject constructor(
             val habit = habitRepository.getHabitById(habitId)
             habit?.let {
                 _uiState.value = _uiState.value.copy(
+                    id = it.id,
                     name = it.name,
                     description = it.description,
                     frequency = HabitFrequency.fromValue(it.frequency),
@@ -69,6 +71,7 @@ class AddEditHabitViewModel @Inject constructor(
         _uiState.value = state.copy(isSaving = true, errorMessage = null)
         viewModelScope.launch {
             val entity = HabitEntity(
+                id = state.id ?: 0,
                 name = state.name,
                 description = state.description,
                 frequency = state.frequency.value,
@@ -78,6 +81,16 @@ class AddEditHabitViewModel @Inject constructor(
                 reminderTime = state.reminderTime
             )
             if (state.isEditing) {
+                // cancel existing reminders and reschedule if needed
+                if (context != null && entity.id != 0L) {
+                    com.habitforge.app.worker.ReminderScheduler.cancelHabitReminders(context, entity.id)
+                    com.habitforge.app.util.HabitNotificationUtil.scheduleHabitNotification(
+                        context,
+                        entity.id,
+                        entity.reminderTime,
+                        entity.startDate
+                    )
+                }
                 habitRepository.updateHabit(entity)
             } else {
                 val id = habitRepository.addHabit(entity)
@@ -85,7 +98,8 @@ class AddEditHabitViewModel @Inject constructor(
                     com.habitforge.app.util.HabitNotificationUtil.scheduleHabitNotification(
                         context,
                         id,
-                        entity.reminderTime
+                        entity.reminderTime,
+                        entity.startDate
                     )
                 }
             }
