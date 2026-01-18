@@ -59,12 +59,13 @@ fun AddEditHabitScreen(
             )
         }
     ) { padding ->
+        // UI improvement: Improved spacing and visual consistency
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             // Habit Name
             OutlinedTextField(
@@ -87,14 +88,16 @@ fun AddEditHabitScreen(
             )
 
             // Frequency Selection
+            // UI styling: Orange accent for section header
             Text(
                 text = stringResource(R.string.habit_frequency),
-                style = MaterialTheme.typography.labelLarge
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
             )
-
+            Spacer(modifier = Modifier.height(8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 HabitFrequency.entries.forEach { frequency ->
                     FilterChip(
@@ -165,9 +168,19 @@ fun AddEditHabitScreen(
             }
 
             // Days of Week (for weekly habits)
+            // UI styling: Orange accent for section header
             if (uiState.frequency == HabitFrequency.WEEKLY) {
                 val days = listOf("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = "Select Days",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
                     days.forEach { day ->
                         FilterChip(
                             selected = uiState.daysOfWeek.contains(day),
@@ -176,7 +189,8 @@ fun AddEditHabitScreen(
                                     uiState.daysOfWeek - day else uiState.daysOfWeek + day
                                 viewModel.updateDaysOfWeek(newSet)
                             },
-                            label = { Text(day) }
+                            label = { Text(day) },
+                            modifier = Modifier.weight(1f)
                         )
                     }
                 }
@@ -193,7 +207,7 @@ fun AddEditHabitScreen(
                 )
             }
 
-            // Save Button
+            // UI styling: Orange primary button
             Button(
                 onClick = {
                     scope.launch {
@@ -201,15 +215,22 @@ fun AddEditHabitScreen(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.isSaving
+                enabled = !uiState.isSaving,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
             ) {
                 if (uiState.isSaving) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text(stringResource(R.string.save))
+                    Text(
+                        stringResource(R.string.save),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                 }
             }
         }

@@ -1,11 +1,14 @@
 package com.habitforge.app.data.remote.firebase
 
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.FirebaseApp
+import com.google.firebase.firestore.FirebaseFirestore
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import android.content.Context
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.habitforge.app.data.local.entity.UserProfileEntity
@@ -14,12 +17,20 @@ import com.habitforge.app.data.local.entity.JournalEntryEntity
 
 @Singleton
 class FirestoreService @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore?
 ) {
     // FirestoreService ready for profile/stats sync
 
+    private fun firestoreOrNull(): FirebaseFirestore? = firestore
+
     // Stream community posts ordered by timestamp desc
     fun getCommunityPosts(): Flow<List<CommunityPost>> = callbackFlow {
+        val firestore = firestoreOrNull()
+        if (firestore == null) {
+            close(IllegalStateException("Firebase is not configured (missing google-services.json)."))
+            return@callbackFlow
+        }
+
         val query = firestore.collection("community")
             .orderBy("timestamp", Query.Direction.DESCENDING)
 
@@ -45,6 +56,9 @@ class FirestoreService @Inject constructor(
 
     // Share a post and return the created document id
     suspend fun sharePost(post: CommunityPost): Result<String> {
+        val firestore = firestoreOrNull()
+            ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
+
         return try {
             val ref = firestore.collection("community").add(post).await()
             Result.success(ref.id)
@@ -55,6 +69,9 @@ class FirestoreService @Inject constructor(
 
     // Increment likes for a post
     suspend fun likePost(postId: String): Result<Unit> {
+        val firestore = firestoreOrNull()
+            ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
+
         return try {
             firestore.runTransaction { transaction ->
                 val ref = firestore.collection("community").document(postId)
@@ -70,6 +87,9 @@ class FirestoreService @Inject constructor(
 
     // Save user profile to Firestore (single-user: document id = "main")
     suspend fun saveUserProfile(profile: UserProfileEntity): Result<Unit> {
+        val firestore = firestoreOrNull()
+            ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
+
         return try {
             firestore.collection("profiles").document("main").set(profile).await()
             Result.success(Unit)
@@ -80,6 +100,9 @@ class FirestoreService @Inject constructor(
 
     // Load user profile from Firestore (single-user: document id = "main")
     suspend fun loadUserProfile(): Result<UserProfileEntity?> {
+        val firestore = firestoreOrNull()
+            ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
+
         return try {
             val doc = firestore.collection("profiles").document("main").get().await()
             if (doc.exists()) {
@@ -95,6 +118,9 @@ class FirestoreService @Inject constructor(
 
     // Save all habits to Firestore
     suspend fun saveHabits(habits: List<HabitEntity>): Result<Unit> {
+        val firestore = firestoreOrNull()
+            ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
+        
         return try {
             val batch = firestore.batch()
             val habitsCollection = firestore.collection("habits")
@@ -111,6 +137,9 @@ class FirestoreService @Inject constructor(
 
     // Load all habits from Firestore
     suspend fun loadHabits(): Result<List<HabitEntity>> {
+        val firestore = firestoreOrNull()
+            ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
+        
         return try {
             val snapshot = firestore.collection("habits").get().await()
             val habits = snapshot.documents.mapNotNull { it.toObject(HabitEntity::class.java) }
@@ -122,6 +151,9 @@ class FirestoreService @Inject constructor(
 
     // Save all journal entries to Firestore
     suspend fun saveJournalEntries(entries: List<JournalEntryEntity>): Result<Unit> {
+        val firestore = firestoreOrNull()
+            ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
+        
         return try {
             val batch = firestore.batch()
             val entriesCollection = firestore.collection("journal_entries")
@@ -138,6 +170,9 @@ class FirestoreService @Inject constructor(
 
     // Load all journal entries from Firestore
     suspend fun loadJournalEntries(): Result<List<JournalEntryEntity>> {
+        val firestore = firestoreOrNull()
+            ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
+        
         return try {
             val snapshot = firestore.collection("journal_entries").get().await()
             val entries = snapshot.documents.mapNotNull { it.toObject(JournalEntryEntity::class.java) }
