@@ -42,51 +42,72 @@ fun AddJournalEntryScreen(
             )
         }
     ) { padding ->
+        // UI improvement: Improved spacing and visual consistency
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             // Mood Selection
+            // UI styling: Orange accent for section header
             Text(
                 text = "How are you feeling?",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
             )
 
+            // UI improvement: Enhanced mood selection with cards
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Mood.entries.forEach { mood ->
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
+                    val isSelected = uiState.mood == mood
+                    // UI styling: Orange accent for selected mood
+                    Card(
                         modifier = Modifier
+                            .weight(1f)
                             .selectable(
-                                selected = uiState.mood == mood,
+                                selected = isSelected,
                                 onClick = { viewModel.updateMood(mood) },
                                 role = Role.RadioButton
-                            )
-                            .padding(8.dp)
-                    ) {
-                        Text(
-                            text = mood.emoji,
-                            style = MaterialTheme.typography.headlineMedium
+                            ),
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = if (isSelected) 4.dp else 1.dp
+                        ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isSelected)
+                                MaterialTheme.colorScheme.primaryContainer // UI styling: Orange tint
+                            else
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                         )
-                        if (uiState.mood == mood) {
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             Text(
-                                text = mood.label,
-                                style = MaterialTheme.typography.labelSmall
+                                text = mood.emoji,
+                                style = MaterialTheme.typography.headlineLarge
                             )
+                            if (isSelected) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = mood.label,
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
             // Journal Content
+            // UI improvement: Better text field styling
             OutlinedTextField(
                 value = uiState.content,
                 onValueChange = { viewModel.updateContent(it) },
@@ -94,7 +115,9 @@ fun AddJournalEntryScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                isError = uiState.errorMessage != null && uiState.content.isBlank()
+                isError = uiState.errorMessage != null && uiState.content.isBlank(),
+                minLines = 8,
+                maxLines = 15
             )
 
             // Error message
@@ -106,19 +129,26 @@ fun AddJournalEntryScreen(
                 )
             }
 
-            // Save Button
+            // UI styling: Orange primary button
             Button(
                 onClick = { viewModel.saveEntry() },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.isSaving
+                enabled = !uiState.isSaving,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
             ) {
                 if (uiState.isSaving) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text(stringResource(R.string.save))
+                    Text(
+                        stringResource(R.string.save),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                 }
             }
         }

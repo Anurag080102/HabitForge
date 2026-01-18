@@ -30,8 +30,16 @@ fun HabitsScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToAddHabit) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_habit))
+            // UI styling: Orange FAB for primary action
+            FloatingActionButton(
+                onClick = onNavigateToAddHabit,
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(
+                    Icons.Default.Add, 
+                    contentDescription = stringResource(R.string.add_habit),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
             }
         }
     ) { padding ->
@@ -45,25 +53,37 @@ fun HabitsScreen(
                 CircularProgressIndicator()
             }
         } else if (uiState.habits.isEmpty()) {
+            // UI improvement: Enhanced empty state with card design
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Default.CheckCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                // UI styling: Orange-accented empty state
+                Card(
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = stringResource(R.string.no_habits),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.primary // UI styling: Orange icon
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = stringResource(R.string.no_habits),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         } else {
@@ -102,11 +122,21 @@ fun HabitListCard(
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
 
+    // UI styling: Orange accent for completed habits
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (habitItem.isCompletedToday) 4.dp else 2.dp
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = if (habitItem.isCompletedToday)
+                MaterialTheme.colorScheme.primaryContainer // UI styling: Orange tint
+            else
+                MaterialTheme.colorScheme.surface
+        )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -119,6 +149,7 @@ fun HabitListCard(
                         style = MaterialTheme.typography.titleMedium
                     )
                     if (habitItem.habit.description.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = habitItem.habit.description,
                             style = MaterialTheme.typography.bodySmall,
@@ -127,60 +158,89 @@ fun HabitListCard(
                     }
                 }
 
-                Row {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     IconButton(onClick = onEdit) {
-                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit))
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = stringResource(R.string.edit),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                     IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete))
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = stringResource(R.string.delete),
+                            tint = MaterialTheme.colorScheme.error
+                        )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                     Column {
                         Text(
                             text = stringResource(R.string.current_streak),
-                            style = MaterialTheme.typography.labelSmall
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        // UI styling: Orange accent for streak
                         Text(
                             text = "🔥 ${habitItem.currentStreak}",
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                     Column {
                         Text(
                             text = "Total",
-                            style = MaterialTheme.typography.labelSmall
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "${habitItem.totalCompletions}",
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.titleMedium
                         )
                     }
                 }
 
-                FilledTonalButton(
-                    onClick = onToggleComplete
+                // UI styling: Orange button for primary action
+                Button(
+                    onClick = onToggleComplete,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (habitItem.isCompletedToday)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.primaryContainer
+                    )
                 ) {
                     Icon(
                         if (habitItem.isCompletedToday) Icons.Default.Check else Icons.Default.Add,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(18.dp),
+                        tint = if (habitItem.isCompletedToday)
+                            MaterialTheme.colorScheme.onPrimary
+                        else
+                            MaterialTheme.colorScheme.onPrimaryContainer
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         if (habitItem.isCompletedToday)
                             stringResource(R.string.done)
                         else
-                            stringResource(R.string.mark_complete)
+                            stringResource(R.string.mark_complete),
+                        color = if (habitItem.isCompletedToday)
+                            MaterialTheme.colorScheme.onPrimary
+                        else
+                            MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
             }

@@ -32,8 +32,16 @@ fun JournalScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToAddEntry) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_entry))
+            // UI styling: Orange FAB for primary action
+            FloatingActionButton(
+                onClick = onNavigateToAddEntry,
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(
+                    Icons.Default.Add, 
+                    contentDescription = stringResource(R.string.add_entry),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
             }
         }
     ) { padding ->
@@ -47,17 +55,31 @@ fun JournalScreen(
                 CircularProgressIndicator()
             }
         } else if (uiState.entries.isEmpty()) {
+            // UI improvement: Enhanced empty state with card design
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = stringResource(R.string.no_entries),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                // UI styling: Orange-accented empty state
+                Card(
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = stringResource(R.string.no_entries),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
         } else {
             LazyColumn(
@@ -86,11 +108,13 @@ fun JournalEntryCard(
     var showDeleteDialog by remember { mutableStateOf(false) }
     val mood = Mood.fromValue(entry.mood)
 
+    // UI improvement: Added elevation and improved spacing
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -99,33 +123,42 @@ fun JournalEntryCard(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
                         text = mood.emoji,
-                        style = MaterialTheme.typography.headlineSmall
+                        style = MaterialTheme.typography.headlineMedium
                     )
-                    Text(
-                        text = entry.date,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Column {
+                        Text(
+                            text = entry.date,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        // UI styling: Orange accent for mood label
+                        Text(
+                            text = mood.label,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
 
                 IconButton(onClick = { showDeleteDialog = true }) {
                     Icon(
                         Icons.Default.Delete,
                         contentDescription = stringResource(R.string.delete),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = MaterialTheme.colorScheme.error
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Text(
                 text = entry.content,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
             )
         }
     }
