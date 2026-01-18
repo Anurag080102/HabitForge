@@ -39,7 +39,6 @@ class HabitsViewModel @Inject constructor(
 
     private fun loadHabits() {
         viewModelScope.launch {
-            // Combine habits Flow with today's completions Flow to ensure updates when completions change
             combine(
                 habitRepository.getAllHabits(),
                 habitRepository.getTodayCompletions()
@@ -63,7 +62,6 @@ class HabitsViewModel @Inject constructor(
 
     fun deleteHabit(habit: HabitEntity, context: android.content.Context? = null) {
         viewModelScope.launch {
-            // Cancel scheduled reminders for this habit if context available
             if (context != null) {
                 com.habitforge.app.worker.ReminderScheduler.cancelHabitReminders(context, habit.id)
             }
@@ -104,6 +102,3 @@ class HabitsViewModel @Inject constructor(
         }
     }
 }
-
-// Removed duplicate AddEditHabitUiState and AddEditHabitViewModel from this file.
-// The AddEditHabitViewModel is defined in AddEditHabitViewModel.kt and should be used from there.

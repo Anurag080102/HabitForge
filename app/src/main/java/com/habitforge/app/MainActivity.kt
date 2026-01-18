@@ -40,7 +40,6 @@ import com.habitforge.app.data.repository.HabitRepository
 import android.content.Context
 import com.habitforge.app.util.LocaleHelper
 
-// Bottom navigation items
 sealed class BottomNavItem(
     val route: String,
     val icon: ImageVector,
@@ -59,8 +58,6 @@ class MainActivity : ComponentActivity() {
     lateinit var habitRepository: HabitRepository
 
     override fun attachBaseContext(newBase: Context) {
-        // Apply saved language preference at activity level
-        // This is called on every activity creation/recreation
         val savedLanguage = LocaleHelper.getSavedLanguage(newBase)
         android.util.Log.d("MainActivity", "attachBaseContext called, savedLanguage=$savedLanguage")
         val contextToUse = if (savedLanguage != null && savedLanguage.isNotEmpty()) {
@@ -82,8 +79,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // Schedule per-habit one-time reminders for existing habits
-        // Note: Daily reminder is already scheduled in HabitForgeApp.onCreate()
         lifecycleScope.launch {
             try {
                 val habits = habitRepository.getAllHabitsOnce()
@@ -98,7 +93,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             } catch (e: Exception) {
-                // Log error but don't crash
                 android.util.Log.e("MainActivity", "Failed to schedule habit reminders", e)
             }
         }
@@ -118,7 +112,6 @@ fun MainAppContent() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Define which screens show bottom nav
     val bottomNavItems = listOf(
         BottomNavItem.Dashboard,
         BottomNavItem.Habits,
@@ -131,7 +124,6 @@ fun MainAppContent() {
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
-                // UI styling: Orange accent for selected navigation items
                 NavigationBar {
                     bottomNavItems.forEach { item ->
                         val isSelected = currentDestination?.hierarchy?.any { it.route == item.route } == true

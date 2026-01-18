@@ -20,12 +20,9 @@ class HabitForgeApp : Application(), Configuration.Provider {
 
     override val workManagerConfiguration: Configuration
         get() {
-            // Initialize configuration on first access, ensuring workerFactory is ready
             if (_workManagerConfiguration == null) {
-                // Hilt injection should complete before onCreate(), but add defensive check
                 if (!::workerFactory.isInitialized) {
                     android.util.Log.e("HabitForgeApp", "workerFactory not initialized! This should not happen.")
-                    // Return default configuration if workerFactory not ready (should not happen)
                     return Configuration.Builder().build()
                 }
                 android.util.Log.d("HabitForgeApp", "Initializing WorkManager configuration with HiltWorkerFactory")
@@ -37,8 +34,6 @@ class HabitForgeApp : Application(), Configuration.Provider {
         }
 
     override fun attachBaseContext(base: Context) {
-        // Apply saved language preference at the application level
-        // This ensures all activities inherit the correct locale
         val savedLanguage = LocaleHelper.getSavedLanguage(base)
         val contextToUse = if (savedLanguage != null && savedLanguage.isNotEmpty()) {
             LocaleHelper.setLocale(base, savedLanguage)
@@ -51,21 +46,14 @@ class HabitForgeApp : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         
-        // Force initialization of WorkManager configuration early
-        // This ensures HiltWorkerFactory is ready before any WorkManager operations
         android.util.Log.d("HabitForgeApp", "onCreate: Initializing WorkManager configuration")
         if (!::workerFactory.isInitialized) {
             android.util.Log.e("HabitForgeApp", "workerFactory not initialized in onCreate()!")
         } else {
-            // Initialize WorkManager with our custom configuration
-            // This ensures HiltWorkerFactory is used for all workers
             try {
                 val config = workManagerConfiguration
                 android.util.Log.d("HabitForgeApp", "WorkManager configuration initialized: $config")
                 
-                // Initialize WorkManager with our configuration
-                // This must be done before any WorkManager operations
-                // Since we disabled auto-initialization in AndroidManifest, we must initialize manually
                 if (!WorkManager.isInitialized()) {
                     WorkManager.initialize(this, config)
                     android.util.Log.d("HabitForgeApp", "WorkManager initialized with HiltWorkerFactory")
@@ -77,8 +65,6 @@ class HabitForgeApp : Application(), Configuration.Provider {
             }
         }
         
-        // Hilt injection completes before onCreate(), so workerFactory should be initialized
-        // Schedule daily reminders after ensuring WorkManager is properly configured
         ReminderScheduler.scheduleDailyReminder(this)
     }
 }

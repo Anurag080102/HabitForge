@@ -12,7 +12,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 
-// UI styling: Orange and white color scheme
 private val DarkColorScheme = darkColorScheme(
     primary = OrangeDark,
     onPrimary = Color(0xFFFFFFFF),
@@ -52,14 +51,10 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun HabitForgeTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // UI styling: Disabled to use custom orange theme
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    // Force recomposition when locale changes by reading configuration
     val configuration = LocalConfiguration.current
-    // This ensures Compose recomposes when locale changes
-    
-    // UI styling: Force custom orange color scheme
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
     MaterialTheme(

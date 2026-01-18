@@ -19,59 +19,45 @@ class HabitRepository @Inject constructor(
 ) {
     private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
-    // Get all active habits
     fun getAllHabits(): Flow<List<HabitEntity>> = habitDao.getAllHabits()
 
-    // Get habit by ID
     suspend fun getHabitById(habitId: Long): HabitEntity? = habitDao.getHabitById(habitId)
 
-    // Get habit as Flow
     fun getHabitByIdFlow(habitId: Long): Flow<HabitEntity?> = habitDao.getHabitByIdFlow(habitId)
 
-    // Add new habit and sync to Firestore
     suspend fun addHabit(habit: HabitEntity): Long {
         val id = habitDao.insertHabit(habit)
-        // Try to sync to Firestore, but don't fail if it doesn't work
         try {
             val habits = habitDao.getAllHabitsOnce()
             firestoreService.saveHabits(habits).getOrNull()
         } catch (e: Exception) {
-            // Firestore sync failed, but local save succeeded - this is OK
             android.util.Log.d("HabitRepository", "Firestore sync failed for addHabit (non-critical)", e)
         }
         return id
     }
 
-    // Update habit and sync to Firestore
     suspend fun updateHabit(habit: HabitEntity) {
         habitDao.updateHabit(habit)
-        // Try to sync to Firestore, but don't fail if it doesn't work
         try {
             val habits = habitDao.getAllHabitsOnce()
             firestoreService.saveHabits(habits).getOrNull()
         } catch (e: Exception) {
-            // Firestore sync failed, but local update succeeded - this is OK
             android.util.Log.d("HabitRepository", "Firestore sync failed for updateHabit (non-critical)", e)
         }
     }
 
-    // Delete habit
     suspend fun deleteHabit(habit: HabitEntity) {
         habitDao.deleteHabit(habit)
-        // Try to sync to Firestore, but don't fail if it doesn't work
         try {
             val habits = habitDao.getAllHabitsOnce()
             firestoreService.saveHabits(habits).getOrNull()
         } catch (e: Exception) {
-            // Firestore sync failed, but local delete succeeded - this is OK
             android.util.Log.d("HabitRepository", "Firestore sync failed for deleteHabit (non-critical)", e)
         }
     }
 
-    // Archive habit
     suspend fun archiveHabit(habitId: Long) = habitDao.archiveHabit(habitId)
 
-    // Mark habit as complete for today
     suspend fun markHabitComplete(habitId: Long, note: String = "") {
         val today = LocalDate.now().format(dateFormatter)
         val completion = HabitCompletionEntity(
@@ -83,7 +69,6 @@ class HabitRepository @Inject constructor(
         completionDao.insertCompletion(completion)
     }
 
-    // Mark habit as missed for today
     suspend fun markHabitMissed(habitId: Long) {
         val today = LocalDate.now().format(dateFormatter)
         val completion = HabitCompletionEntity(
@@ -100,11 +85,9 @@ class HabitRepository @Inject constructor(
         completionDao.deleteCompletion(habitId, today)
     }
 
-    // Get completions for a habit
     fun getCompletionsForHabit(habitId: Long): Flow<List<HabitCompletionEntity>> =
         completionDao.getCompletionsForHabit(habitId)
 
-    // Get today's completions
     fun getTodayCompletions(): Flow<List<HabitCompletionEntity>> {
         val today = LocalDate.now().format(dateFormatter)
         return completionDao.getCompletionsForDate(today)
@@ -117,19 +100,15 @@ class HabitRepository @Inject constructor(
         return completion?.isCompleted == true
     }
 
-    // Calculate current streak for a habit
     suspend fun calculateStreak(habitId: Long): Int {
         var streak = 0
         var currentDate = LocalDate.now()
 
-        // Check if completed today first
         val todayCompletion = completionDao.getCompletion(habitId, currentDate.format(dateFormatter))
         if (todayCompletion?.isCompleted != true) {
-            // If not completed today, start from yesterday
             currentDate = currentDate.minusDays(1)
         }
 
-        // Count consecutive days
         while (true) {
             val dateStr = currentDate.format(dateFormatter)
             val completion = completionDao.getCompletion(habitId, dateStr)
@@ -145,11 +124,9 @@ class HabitRepository @Inject constructor(
         return streak
     }
 
-    // Get total completions count
     suspend fun getTotalCompletions(habitId: Long): Int =
         completionDao.getTotalCompletions(habitId)
 
-    // Get all active habits for a given date and day of week
     fun getHabitsForDate(date: LocalDate): Flow<List<HabitEntity>> {
         val dayOfWeek = date.dayOfWeek.name.take(3) // e.g., MON, TUE
         return habitDao.getHabitsForDate(date.format(dateFormatter), dayOfWeek)
@@ -164,7 +141,6 @@ class HabitRepository @Inject constructor(
         firestoreService.saveHabits(habits)
     }
 
-    // Load all habits from Firestore and update local
     suspend fun syncHabitsFromRemote() {
         val remoteResult = firestoreService.loadHabits()
         if (remoteResult.isSuccess) {
@@ -175,6 +151,5 @@ class HabitRepository @Inject constructor(
         }
     }
 
-    // Get all habits as a list (not Flow)
     suspend fun getAllHabitsOnce(): List<HabitEntity> = habitDao.getAllHabitsOnce()
 }

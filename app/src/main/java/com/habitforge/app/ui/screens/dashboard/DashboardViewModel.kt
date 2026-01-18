@@ -46,10 +46,7 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
-            // Load quote
             loadQuote()
-
-            // Load habits with their status
             loadHabitsWithStatus()
         }
     }
@@ -63,7 +60,6 @@ class DashboardViewModel @Inject constructor(
 
     private fun loadHabitsWithStatus() {
         viewModelScope.launch {
-            // Combine habits Flow with today's completions Flow to ensure updates when completions change
             combine(
                 habitRepository.getAllHabits(),
                 habitRepository.getTodayCompletions()

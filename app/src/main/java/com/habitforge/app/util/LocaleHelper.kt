@@ -38,20 +38,14 @@ object LocaleHelper {
      */
     fun applyLocale(activity: Activity, language: String) {
         android.util.Log.d("LocaleHelper", "applyLocale called with language=$language")
-        // Save language preference first (synchronously to ensure it's saved before recreation)
         saveLanguagePreference(activity, language)
         android.util.Log.d("LocaleHelper", "Language saved to SharedPreferences, recreating activity")
-        // Recreate activity - attachBaseContext will be called and will apply the saved locale
         activity.recreate()
     }
 
-    /**
-     * Saves language preference to SharedPreferences for quick access
-     * Uses commit() instead of apply() to ensure synchronous write before activity recreation
-     */
     private fun saveLanguagePreference(context: Context, language: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_LANGUAGE, language).commit() // Use commit() for synchronous write
+        prefs.edit().putString(KEY_LANGUAGE, language).commit()
     }
 
     /**

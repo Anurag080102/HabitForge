@@ -12,9 +12,6 @@ object ReminderScheduler {
 
     private const val TAG = "ReminderScheduler"
 
-    // Schedule reminder for a specific habit at a specific time (one day prior to habit startDate)
-    // Logic: If habit starts today, schedule for today at reminder time (if not passed)
-    //        If habit starts tomorrow or later, schedule for 1 day before at reminder time
     fun scheduleHabitReminder(context: Context, habitId: Long, reminderTime: String, startDate: String) {
         try {
             Log.d(TAG, "scheduleHabitReminder called for habitId=$habitId reminderTime=$reminderTime startDate=$startDate")
@@ -22,7 +19,6 @@ object ReminderScheduler {
             val habitStart = LocalDate.parse(startDate, formatter)
             val today = LocalDate.now()
             
-            // Parse reminderTime (HH:mm)
             val parts = reminderTime.split(":")
             if (parts.size != 2) {
                 Log.w(TAG, "Invalid reminderTime format: $reminderTime (expected HH:mm)")
@@ -37,15 +33,8 @@ object ReminderScheduler {
 
             val now = Calendar.getInstance()
             
-            // Determine reminder date:
-            // Logic: User should receive notification 1 day BEFORE the scheduled habit
-            // - If habit starts today: reminder should have been yesterday, but if time hasn't passed today, schedule for today
-            // - If habit starts tomorrow: reminder is today at reminder time
-            // - If habit starts in 2+ days: reminder is 1 day before at reminder time
             val reminderDate = when {
                 habitStart == today -> {
-                    // Habit starts today - if reminder time hasn't passed, schedule for today
-                    // If reminder time has passed, schedule for tomorrow (user will get reminder for tomorrow's habit)
                     val todayAtReminderTime = Calendar.getInstance().apply {
                         set(Calendar.YEAR, today.year)
                         set(Calendar.MONTH, today.monthValue - 1)
@@ -57,16 +46,13 @@ object ReminderScheduler {
                     }
                     if (todayAtReminderTime.after(now)) {
                         Log.d(TAG, "Habit starts today, reminder time hasn't passed yet, scheduling for today at $reminderTime")
-                        today // Schedule for today if time hasn't passed
+                        today
                     } else {
-                        // Reminder time has passed today, schedule for tomorrow
                         Log.d(TAG, "Habit starts today but reminder time ($reminderTime) has already passed. Scheduling for tomorrow at $reminderTime")
-                        today.plusDays(1) // Schedule for tomorrow
+                        today.plusDays(1)
                     }
                 }
                 habitStart == today.plusDays(1) -> {
-                    // Habit starts tomorrow - reminder is today at reminder time
-                    // But if reminder time has already passed today, schedule for tomorrow at reminder time
                     val todayAtReminderTime = Calendar.getInstance().apply {
                         set(Calendar.YEAR, today.year)
                         set(Calendar.MONTH, today.monthValue - 1)
@@ -81,17 +67,15 @@ object ReminderScheduler {
                         today
                     } else {
                         Log.d(TAG, "Habit starts tomorrow, reminder time has passed today, scheduling for tomorrow at $reminderTime")
-                        today.plusDays(1) // Schedule for tomorrow if time has passed
+                        today.plusDays(1)
                     }
                 }
                 habitStart.isAfter(today) -> {
-                    // Habit starts in 2+ days - reminder is 1 day before
                     val date = habitStart.minusDays(1)
                     Log.d(TAG, "Habit starts in future ($startDate), scheduling reminder for 1 day before: $date")
                     date
                 }
                 else -> {
-                    // Habit starts in the past - don't schedule
                     Log.w(TAG, "Habit start date ($startDate) is in the past. Not scheduling reminder.")
                     return
                 }
@@ -119,10 +103,9 @@ object ReminderScheduler {
                 .putLong("habitId", habitId)
                 .build()
 
-            // Add constraints to ensure work runs even if device is idle
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
-                .setRequiresBatteryNotLow(false) // Don't require battery to be not low for reminders
+                .setRequiresBatteryNotLow(false)
                 .setRequiresCharging(false)
                 .build()
 
@@ -139,22 +122,17 @@ object ReminderScheduler {
             Log.d(TAG, "  - Delay: ${delay / 1000 / 60} minutes (${delay / 1000 / 60 / 60} hours)")
             Log.d(TAG, "  - Reminder date: $reminderDate, Reminder time: $reminderTime")
             Log.d(TAG, "  - WorkRequest ID: ${request.id}")
-            
-            // Verify the work was enqueued
             android.util.Log.d(TAG, "WorkManager instance: ${WorkManager.getInstance(context)}")
         } catch (e: Exception) {
-            // Log the exception for debugging instead of silently ignoring
             Log.e(TAG, "Failed to schedule reminder for habitId=$habitId", e)
         }
     }
 
-    // Cancel all reminders for a habit (by tag)
     fun cancelHabitReminders(context: Context, habitId: Long) {
         Log.d(TAG, "cancelHabitReminders called for habitId=$habitId")
         WorkManager.getInstance(context).cancelAllWorkByTag("habit_$habitId")
     }
 
-    // Schedule daily reminder at a specific time
     fun scheduleDailyReminder(context: Context) {
         val constraints = Constraints.Builder()
             .setRequiresBatteryNotLow(true)
@@ -187,7 +165,6 @@ object ReminderScheduler {
             set(Calendar.MILLISECOND, 0)
         }
         
-        // If midnight has passed today, schedule for tomorrow
         if (midnight.before(now) || midnight.equals(now)) {
             midnight.add(Calendar.DAY_OF_MONTH, 1)
         }
@@ -209,7 +186,6 @@ object ReminderScheduler {
         Log.d(TAG, "Daily reset worker scheduled")
     }
 
-    // Cancel scheduled reminders
     fun cancelReminders(context: Context) {
         WorkManager.getInstance(context).cancelUniqueWork(HabitReminderWorker.WORK_NAME)
     }
@@ -221,10 +197,9 @@ object ReminderScheduler {
             set(Calendar.HOUR_OF_DAY, 20)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0) // Ensure millisecond precision
+            set(Calendar.MILLISECOND, 0)
         }
 
-        // If target time has passed today, schedule for tomorrow
         if (target.before(now) || target.equals(now)) {
             target.add(Calendar.DAY_OF_MONTH, 1)
         }
@@ -243,7 +218,6 @@ object ReminderScheduler {
         WorkManager.getInstance(context).enqueue(reminderRequest)
     }
 
-    // Schedule one-time immediate reminder for a specific habit (for testing)
     fun scheduleImmediateHabitReminder(context: Context, habitId: Long, delayMinutes: Long = 1) {
         val data = Data.Builder().putLong("habitId", habitId).build()
         val constraints = Constraints.Builder()
@@ -261,8 +235,6 @@ object ReminderScheduler {
         Log.d(TAG, "Enqueued immediate OneTimeWorkRequest for habit_$habitId with delayMinutes=$delayMinutes")
     }
     
-    // Debug function to check scheduled work
-    // Note: For detailed work info, use: adb shell dumpsys jobscheduler | grep habit
     fun logScheduledWork(context: Context, habitId: Long) {
         Log.d(TAG, "Scheduled work check requested for habit_$habitId")
         Log.d(TAG, "To verify scheduled work, run: adb shell dumpsys jobscheduler | grep habit_$habitId")

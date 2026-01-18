@@ -16,11 +16,7 @@ import com.habitforge.app.data.local.entity.JournalEntryEntity
 class FirestoreService @Inject constructor(
     private val firestore: FirebaseFirestore?
 ) {
-    // FirestoreService ready for profile/stats sync
-
     private fun firestoreOrNull(): FirebaseFirestore? = firestore
-
-    // Stream community posts ordered by timestamp desc
     fun getCommunityPosts(): Flow<List<CommunityPost>> = callbackFlow {
         val firestore = firestoreOrNull()
         if (firestore == null) {
@@ -33,8 +29,6 @@ class FirestoreService @Inject constructor(
 
         val subscription = query.addSnapshotListener { snapshot, error ->
             if (error != null) {
-                // Log Firestore errors but don't spam logs
-                // PERMISSION_DENIED is expected if Firestore rules are not configured
                 if (error.message?.contains("PERMISSION_DENIED") != true) {
                     android.util.Log.d("FirestoreService", "Community posts error (non-critical): ${error.message}")
                 }
@@ -56,7 +50,6 @@ class FirestoreService @Inject constructor(
         awaitClose { subscription.remove() }
     }
 
-    // Share a post and return the created document id
     suspend fun sharePost(post: CommunityPost): Result<String> {
         val firestore = firestoreOrNull()
             ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
@@ -69,7 +62,6 @@ class FirestoreService @Inject constructor(
         }
     }
 
-    // Increment likes for a post
     suspend fun likePost(postId: String): Result<Unit> {
         val firestore = firestoreOrNull()
             ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
@@ -87,7 +79,6 @@ class FirestoreService @Inject constructor(
         }
     }
 
-    // Save user profile to Firestore (single-user: document id = "main")
     suspend fun saveUserProfile(profile: UserProfileEntity): Result<Unit> {
         val firestore = firestoreOrNull()
             ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
@@ -96,14 +87,11 @@ class FirestoreService @Inject constructor(
             firestore.collection("profiles").document("main").set(profile).await()
             Result.success(Unit)
         } catch (e: Exception) {
-            // Log only once per error type to reduce log noise
-            // Firestore errors are non-critical - app works in offline mode
             android.util.Log.d("FirestoreService", "Firestore profile save failed (non-critical, app works offline): ${e.message}")
             Result.failure(e)
         }
     }
 
-    // Load user profile from Firestore (single-user: document id = "main")
     suspend fun loadUserProfile(): Result<UserProfileEntity?> {
         val firestore = firestoreOrNull()
             ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
@@ -121,7 +109,6 @@ class FirestoreService @Inject constructor(
         }
     }
 
-    // Save all habits to Firestore
     suspend fun saveHabits(habits: List<HabitEntity>): Result<Unit> {
         val firestore = firestoreOrNull()
             ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
@@ -130,19 +117,16 @@ class FirestoreService @Inject constructor(
             val batch = firestore.batch()
             val habitsCollection = firestore.collection("habits")
 
-            // Fetch existing remote habit docs to determine which to delete
             val existingSnapshot = habitsCollection.get().await()
             val existingIds = existingSnapshot.documents.mapNotNull { it.id }.toSet()
             val localIds = habits.map { it.id.toString() }.toSet()
 
-            // Delete remote docs that are not in local list
             val idsToDelete = existingIds - localIds
             idsToDelete.forEach { id ->
                 val docRef = habitsCollection.document(id)
                 batch.delete(docRef)
             }
 
-            // Upsert local habits
             habits.forEach { habit ->
                 val docRef = habitsCollection.document(habit.id.toString())
                 batch.set(docRef, habit)
@@ -151,14 +135,11 @@ class FirestoreService @Inject constructor(
             batch.commit().await()
             Result.success(Unit)
         } catch (e: Exception) {
-            // Log only once per error type to reduce log noise
-            // Firestore errors are non-critical - app works in offline mode
             android.util.Log.d("FirestoreService", "Firestore sync failed (non-critical, app works offline): ${e.message}")
             Result.failure(e)
         }
     }
 
-    // Delete user profile document from Firestore
     suspend fun deleteUserProfile(): Result<Unit> {
         val firestore = firestoreOrNull()
             ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
@@ -171,7 +152,6 @@ class FirestoreService @Inject constructor(
         }
     }
 
-    // Save all journal entries to Firestore
     suspend fun saveJournalEntries(entries: List<JournalEntryEntity>): Result<Unit> {
         val firestore = firestoreOrNull()
             ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
@@ -190,7 +170,6 @@ class FirestoreService @Inject constructor(
         }
     }
 
-    // Load all journal entries from Firestore
     suspend fun loadJournalEntries(): Result<List<JournalEntryEntity>> {
         val firestore = firestoreOrNull()
             ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
@@ -204,7 +183,6 @@ class FirestoreService @Inject constructor(
         }
     }
 
-    // Load all habits from Firestore
     suspend fun loadHabits(): Result<List<HabitEntity>> {
         val firestore = firestoreOrNull()
             ?: return Result.failure(IllegalStateException("Firebase is not configured (missing google-services.json)."))
